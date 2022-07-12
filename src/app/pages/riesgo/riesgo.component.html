@@ -1,0 +1,233 @@
+<div class="wrapper">
+
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand-md navbar-light navbar-white">
+        <div class="container">
+            <a href="#" class="navbar-brand">
+                <img src="assets/images/logo-misiones2.png" alt="Misiones Logo" class="brand-image">
+            </a>
+
+
+        </div>
+    </nav>
+    <!-- /.navbar -->
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <div class="content-header">
+            <div class="container">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0"> Análisis de Situación de Riesgo</h1>
+                    </div><!-- /.col -->
+                </div><!-- /.row -->
+            </div><!-- /.container-fluid -->
+        </div>
+        <!-- /.content-header -->
+
+        <!-- Main content -->
+        <div class="content">
+            <div class="container">
+                <h5 class="mb-2"><i class="fas fa-map-pin"></i> Lat: {{ latitud }} - Long: {{ longitud }}</h5>
+                <h5 class="mb-2"><i class="far fa-map"></i> {{ lugar }}</h5>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="info-box" [class.bg-gray]="factorRiesgo == 0" [class.bg-1]="factorRiesgo == 1"
+                            [class.bg-2]="factorRiesgo == 2" [class.bg-3]="factorRiesgo == 3"
+                            [class.bg-4]="factorRiesgo == 4" [class.bg-5]="factorRiesgo == 5">
+                            <div class="overlay" *ngIf="loadingRiesgo">
+                                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+                            </div>
+                            <span class="info-box-icon"><i class="far fa-bookmark"></i></span>
+
+                            <div class="info-box-content">
+
+                                <h2 *ngIf="!loadingRiesgo">Riesgo:
+                                    <container-element [ngSwitch]="factorRiesgo">
+                                        <span *ngSwitchCase="1">Bajo</span>
+                                        <span *ngSwitchCase="2">Moderado</span>
+                                        <span *ngSwitchCase="3">Alto</span>
+                                        <span *ngSwitchCase="4">Muy Alto</span>
+                                        <span *ngSwitchCase="5">Extremo</span>
+                                        <span *ngSwitchDefault>Sin Riesgos</span>
+                                    </container-element>
+
+                                </h2>
+
+                            </div>
+
+                            <!-- /.info-box-content -->
+                        </div>
+                        <!-- /.info-box -->
+                    </div>
+                </div>
+
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title">Información de Proximidad</h3>
+
+                            </div>
+                            <!-- /.card-header -->
+                            <div class="card-body">
+                                <ul>
+                                    <li *ngFor="let condicionRiesgo of condicionesRiesgo">{{ condicionRiesgo }}</li>
+                                </ul>
+                            </div>
+                            <div class="overlay dark" *ngIf="loadingProximididad">
+                                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+                        <!-- /.info-box -->
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-6">
+                        <div class="card card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title">Clima
+                                    <img *ngIf="clima.weathercondtioniconhtml" [src]="clima.weathercondtioniconhtml"
+                                        alt="clima img" class="img-fluid img-clima">
+                                </h3>
+
+                            </div>
+                            <!-- /.card-header -->
+                            <div class="card-body">
+                                <ul>
+                                    <li>Datos del tiempo al : {{ clima.fecha }} Uhr</li>
+                                    <li>Condición: {{clima.weatherconditiondescription}}</li>
+                                    <li>Temperatura: {{clima.temperaturecelsius}} °C</li>
+                                    <li>Presión atmosférica: {{clima.airpressure}} hPa</li>
+                                    <li>Humedad: {{ clima.airhumidity }}%</li>
+                                    <li>Cobertura de Nubes: {{clima.cloudcoverage}}%</li>
+                                    <li>Velocidad del Viento: {{clima.windspeedkmh}} Km/h</li>
+                                    <li>Dirección del Viento: {{clima.direccionViento}} </li>
+                                    <li>Estación Meteorológica: {{clima.estacionMeteorologica}}</li>
+                                </ul>
+                            </div>
+                            <div class="overlay dark" *ngIf="loadingClima">
+                                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title">Topografía</h3>
+
+                            </div>
+                            <!-- /.card-header -->
+                            <div class="card-body">
+                                <ul>
+                                    <li>Inclinación: {{ anguloInclinacion.toFixed(2) }} º</li>
+                                    <li>Orientación Declive: {{ orientacionDeclive.toFixed(2) }} º</li>
+                                </ul>
+                            </div>
+                            <div class="overlay dark" *ngIf="loadingTopoGrafia">
+                                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+
+                        <div class="card card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title">Uso del suelo</h3>
+
+                            </div>
+                            <!-- /.card-header -->
+                            <div class="card-body">
+                                <ul>
+                                    <li *ngFor="let uso of usoDelSuelo">{{ uso }}</li>
+                                </ul>
+                            </div>
+                            <div class="overlay dark" *ngIf="loadingUsoDelSuelo">
+                                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title">Factores combinados</h3>
+
+                            </div>
+                            <!-- /.card-header -->
+                            <div class="card-body">
+                                <ul>
+                                    <li>Factor RV (Rumbo de la Inclinación/Dirección del Viento): {{
+                                        factoresCombinados.rv }} | Valores: 0=Bajo - 1=Alto</li>
+                                    <li>Factor RVI (Rumbo/Inclinacion/Dirección del Viento): {{ factoresCombinados.rvi
+                                        }} | Valores: 0 - 15</li>
+                                </ul>
+                            </div>
+                            <div class="overlay dark" *ngIf="loadingFactoresCombinados">
+                                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title">Predicción de propagación</h3>
+
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <ul>
+                                            <li></li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-6">
+                                        <div style="height: 300px;" leaflet [leafletOptions]="options"
+                                            [leafletLayers]="layers">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- <div class="overlay dark" *ngIf="loadingPrediccionPropagacion">
+                                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+                            </div> -->
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- /.row -->
+            </div><!-- /.container-fluid -->
+        </div>
+        <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+
+    <!-- Control Sidebar -->
+    <aside class="control-sidebar control-sidebar-dark">
+        <!-- Control sidebar content goes here -->
+    </aside>
+    <!-- /.control-sidebar -->
+
+    <!-- Main Footer -->
+    <footer class="main-footer">
+        <!-- To the right -->
+        <div class="float-right d-none d-sm-inline">
+            Versión 2.0.0
+        </div>
+        <!-- Default to the left -->
+        <strong>Copyright &copy; 2022 <a href="https://sig.misiones.gob.ar/">Ministerio de Ecología</a>.</strong> Todo
+        los derechos reservados.
+    </footer>
+</div>

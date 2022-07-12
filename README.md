@@ -1,4 +1,4 @@
-# AnalisisRiesgo
+# Analisis de Situación de Riesgo - Secretaría de ordenamiento territorial - Ministerio de Ecología de la Provincia de Misiones
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 13.0.3.
 
@@ -13,6 +13,8 @@ Run `ng generate component component-name` to generate a new component. You can 
 ## Build
 
 Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+
+- Dont forget create `environment.ts` and `environments.prod.ts` files in `src/environment`.
 
 ## Running unit tests
 

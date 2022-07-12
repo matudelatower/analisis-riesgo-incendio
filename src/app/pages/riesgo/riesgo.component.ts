@@ -27,7 +27,7 @@ export class RiesgoComponent implements OnInit {
   options = {
     layers: [
       tileLayer(
-        `https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/{z}/{x}/{y}?access_token=${}`, {
+        `https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/{z}/{x}/{y}?access_token=${environment.leafletAccessToken}`, {
         tileSize: 512,
         zoomOffset: -1,
         minZoom: 0,

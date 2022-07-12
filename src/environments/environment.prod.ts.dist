@@ -4,5 +4,5 @@ export const environment = {
   urlOpenStreetApi: "https://nominatim.openstreetmap.org",
   urlOpenTopoData: "https://api.opentopodata.org/v1",
   urlSigMisiones: "https://sig.misiones.gob.ar/mapas/emergencia",
-  leafletAccessToke: ''
+  leafletAccessToken: ''
 };

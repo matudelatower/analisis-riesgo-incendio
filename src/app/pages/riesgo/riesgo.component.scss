@@ -26,3 +26,8 @@
 .img-clima {
     width: 1rem;
 }
+
+.flecha-viento,
+.flecha-orientacion-declive {
+    transform: rotate(45deg);
+}

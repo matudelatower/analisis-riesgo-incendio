@@ -4,7 +4,6 @@ import { ActivatedRoute } from '@angular/router';
 import { environment } from 'src/environments/environment';
 import { format } from 'date-fns';
 import { utcToZonedTime } from 'date-fns-tz';
-import { lastValueFrom } from 'rxjs';
 import * as L from 'leaflet'
 import { Map, Control, DomUtil, ZoomAnimEvent, Layer, MapOptions, tileLayer, latLng, circle } from 'leaflet';
 
@@ -22,9 +21,8 @@ export class RiesgoComponent implements OnInit {
   longitud: any;
 
   // leaflet
-  leafletLat = -27.3664;
-  leafletLang = -55.8940;
-  options = {
+  private map?: Map;
+  mapOptions = {
     layers: [
       tileLayer(
         `https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/{z}/{x}/{y}?access_token=${environment.leafletAccessToken}`, {
@@ -32,17 +30,14 @@ export class RiesgoComponent implements OnInit {
         zoomOffset: -1,
         minZoom: 0,
         maxZoom: 21,
+        detectRetina: true,
         attribution: '© <a href="https://apps.mapbox.com/feedback/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
       }
       )
     ],
-    zoom: 16,
-    center: latLng(this.leafletLat, this.leafletLang)
+    zoom: 1,
+    center: latLng(0, 0)
   };
-  layers =
-    [
-      circle([this.leafletLat, this.leafletLang], 100, { color: 'yellow', opacity: 1, fillColor: 'red', fillOpacity: .4 })
-    ];
   // leaflet
 
   lugar: any;
@@ -68,15 +63,6 @@ export class RiesgoComponent implements OnInit {
   direccionViento = 0;
 
   riesgo = '';
-
-  riesgoColor = {
-    0: 'gray',
-    1: 'gray',
-    2: 'gray',
-    3: 'gray',
-    4: 'gray',
-    5: 'danger',
-  };
 
   clima = {
     weatherlocation_lon: 0,
@@ -108,7 +94,9 @@ export class RiesgoComponent implements OnInit {
 
   factoresCombinados = {
     rv: '',
-    rvi: ''
+    rvPercent: 100,
+    rvi: '',
+    rviPercent: 100
   };
 
   constructor(private route: ActivatedRoute,
@@ -128,15 +116,12 @@ export class RiesgoComponent implements OnInit {
 
         this.calcularSituacionRiesgo();
 
-        this.calcularTopografia();
-
-        this.calcularFactoresCombinados();
       }
       );
   }
 
   getLugar() {
-    this.httpService.get(`https://nominatim.openstreetmap.org/reverse?format=json&addressdetails=0&zoom=18&lat=${this.latitud}&lon=${this.longitud}`).subscribe((data: any) => {
+    this.httpService.get(`https://nominatim.openstreetmap.org/reverse?format=json&addressdetails=0&zoom=18&lat=${this.latitud}&lon=${this.longitud}`).then((data: any) => {
       this.lugar = data.display_name;
     });
   }
@@ -145,7 +130,7 @@ export class RiesgoComponent implements OnInit {
   //////////////////////////////////////   CLIMA      /////////////////////////////////////
 
   async getClima() {
-    await this.httpService.get(`https://api.openweathermap.org/data/2.5/weather?lat=${this.latitud}&lon=${this.longitud}&lang=es&appid=32a020e350d198b03a3acfbcdd355310`).subscribe((data) => {
+    await this.httpService.get(`https://api.openweathermap.org/data/2.5/weather?lat=${this.latitud}&lon=${this.longitud}&lang=es&appid=32a020e350d198b03a3acfbcdd355310`).then((data: any) => {
 
       // storing json data in variables
       this.clima.weatherlocation_lon = data.coord.lon; // lon WGS84
@@ -272,9 +257,6 @@ export class RiesgoComponent implements OnInit {
     await this.hayEstacionTransformadora(this.latitud, this.longitud);
     await this.hayLineaAltoVoltaje(this.latitud, this.longitud);
 
-    // this.esSueloBosque(this.latitud, this.longitud);
-    // this.esSueloForestal(this.latitud, this.longitud);
-
     await this.analizarTipoSuelo(this.latitud, this.longitud);
 
     ////////////////////////////////////////////////
@@ -290,13 +272,21 @@ export class RiesgoComponent implements OnInit {
     this.loadingRiesgo = false;
     this.loadingProximididad = false;
     this.loadingUsoDelSuelo = false;
+
+    await this.calcularTopografia();
+
+    this.calcularFactoresCombinados();
+
+    this.calcularPrediccionPropagacion();
+
   }
 
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   // Comunidades Aborígenes // 
   async hayComunidadAborigen(latitud: any, longitud: any) {
-    await this.httpService.get(`${environment.urlSigMisiones}/datos/aborigenes.geojson`).subscribe((data) => {
+
+    await this.httpService.get(`${environment.urlSigMisiones}/datos/aborigenes.geojson`).then((data: any) => {
       for (let i = 0; i < data.features.length; i++) {
         let LatitudControl = data.features[i].geometry.coordinates[1];
         let LongitudControl = data.features[i].geometry.coordinates[0];
@@ -309,11 +299,13 @@ export class RiesgoComponent implements OnInit {
         }
       }
     });
+
+    return;
   };
 
   // Estacion de Servicio // 
   async hayEstacionServicio(latitud: any, longitud: any) {
-    await this.httpService.get(`${environment.urlSigMisiones}/datos/combustible.geojson`).subscribe((data) => {
+    await this.httpService.get(`${environment.urlSigMisiones}/datos/combustible.geojson`).then((data: any) => {
       for (let i = 0; i < data.features.length; i++) {
         let LatitudControl = data.features[i].geometry.coordinates[1];
         let LongitudControl = data.features[i].geometry.coordinates[0];
@@ -327,6 +319,7 @@ export class RiesgoComponent implements OnInit {
         }
       }
     });
+
     return;
   };
 
@@ -334,7 +327,7 @@ export class RiesgoComponent implements OnInit {
 
   // Deposito de Gas // 
   async hayDepositoGas(latitud: any, longitud: any) {
-    await this.httpService.get(`${environment.urlSigMisiones}/datos/deposito-gas.geojson`).subscribe((data) => {
+    await this.httpService.get(`${environment.urlSigMisiones}/datos/deposito-gas.geojson`).then((data: any) => {
       for (let i = 0; i < data.features.length; i++) {
         let LatitudControl = data.features[i].geometry.coordinates[1];
         let LongitudControl = data.features[i].geometry.coordinates[0];
@@ -347,12 +340,13 @@ export class RiesgoComponent implements OnInit {
         }
       }
     });
+
     return;
   }
 
   // Venta de Gas // 
   async hayVentaGas(latitud: any, longitud: any) {
-    await this.httpService.get(`${environment.urlSigMisiones}/datos/venta-gas.geojson`).subscribe((data) => {
+    await this.httpService.get(`${environment.urlSigMisiones}/datos/venta-gas.geojson`).then((data: any) => {
       for (let i = 0; i < data.features.length; i++) {
         let LatitudControl = data.features[i].geometry.coordinates[1];
         let LongitudControl = data.features[i].geometry.coordinates[0];
@@ -375,12 +369,9 @@ export class RiesgoComponent implements OnInit {
     return;
   }
 
-
-
-
   // Escuelas // 
   async hayEscuela(latitud: any, longitud: any) {
-    await this.httpService.get(`${environment.urlSigMisiones}/datos/escuelas.geojson`).subscribe((data) => {
+    await this.httpService.get(`${environment.urlSigMisiones}/datos/escuelas.geojson`).then((data: any) => {
       for (let i = 0; i < data.features.length; i++) {
         var LatitudControl = data.features[i].geometry.coordinates[1];
         var LongitudControl = data.features[i].geometry.coordinates[0];
@@ -400,7 +391,7 @@ export class RiesgoComponent implements OnInit {
 
   // Aserraderos // 
   async hayAserradero(latitud: any, longitud: any) {
-    await this.httpService.get(`${environment.urlSigMisiones}/datos/aserraderos.geojson`).subscribe((data) => {
+    await this.httpService.get(`${environment.urlSigMisiones}/datos/aserraderos.geojson`).then((data: any) => {
       for (let i = 0; i < data.features.length; i++) {
         let LatitudControl = data.features[i].geometry.coordinates[1];
         let LongitudControl = data.features[i].geometry.coordinates[0];
@@ -427,7 +418,7 @@ export class RiesgoComponent implements OnInit {
 
   // Estacion Transformadora // 
   async hayEstacionTransformadora(latitud: any, longitud: any) {
-    await this.httpService.get(`${environment.urlSigMisiones}/datos/estacion-transformadora.geojson`).subscribe((data) => {
+    await this.httpService.get(`${environment.urlSigMisiones}/datos/estacion-transformadora.geojson`).then((data: any) => {
       for (let i = 0; i < data.features.length; i++) {
         let LatitudControl = data.features[i].geometry.coordinates[1];
         let LongitudControl = data.features[i].geometry.coordinates[0];
@@ -447,7 +438,7 @@ export class RiesgoComponent implements OnInit {
   // Lineas Alta Tension // 
   async hayLineaAltoVoltaje(latitud: any, longitud: any) {
     let DistanciaMenor = 1000;
-    await this.httpService.get(`${environment.urlSigMisiones}/datos/alta-tension.geojson`).subscribe((data) => {
+    await this.httpService.get(`${environment.urlSigMisiones}/datos/alta-tension.geojson`).then((data: any) => {
       for (let i = 0; i < data.features.length; i++) {
         for (var j = 0; j < 2; j++) {
           let LatitudControl = data.features[i].geometry.coordinates[j][1];   // coordinates es otro array , hay que volver a recorrer
@@ -473,7 +464,7 @@ export class RiesgoComponent implements OnInit {
     // let Consulta = 'relation(around:2000,' + Latitud + ',' + Longitud + ')' +
     //   '[boundary=protected_area]' + ';out meta' + ';';
     let queryParam = `relation(around:2000,${latitud},${longitud})[boundary=protected_area];out meta;`
-    await this.httpService.get(`${environment.urlOverpassApi}${queryParam}`).subscribe((data) => {
+    await this.httpService.get(`${environment.urlOverpassApi}${queryParam}`).then((data: any) => {
       if (data.elements.length > 0) {
         if (data.elements[0].tags.boundary == "protected_area") {
           this.factorRiesgo = 5;
@@ -482,15 +473,16 @@ export class RiesgoComponent implements OnInit {
           this.condicionesRiesgo.push(condicion + '. : ' + descripcion);
         }
       }
+    }, (error) => {
+      console.error('hayReservaNatural', error);
     });
     return;
   }
 
   async hayAreaUrbanizada(latitud: any, longitud: any) {
-    // var Consulta = 'relation(around:500,' + Latitud + ',' + Longitud + ')' +
-    //   '[landuse=residential]' + ';out meta' + ';';
+
     let queryParam = `relation(around:2000,${latitud},${longitud})[boundary=residential];out meta;`
-    await this.httpService.get(`${environment.urlOverpassApi}${queryParam}`).subscribe((data) => {
+    await this.httpService.get(`${environment.urlOverpassApi}${queryParam}`).then((data: any) => {
       if (data.elements.length > 0) {
         if (data.elements[0].tags.landuse == "residential") {
           this.factorRiesgo = 5;
@@ -500,22 +492,7 @@ export class RiesgoComponent implements OnInit {
         }
       }
     });
-    // $.ajax({
-    //   url: UrlOverpassApi + Consulta,
-    //   async: false,
-    //   dataType: 'json',
-    //   success(result) {
-    //     if (result.elements.length > 0) {
-    //       if (result.elements[0].tags.landuse == "residential") {
-    //         FactorRiesgo = 5;
-    //         Situacion = "Extrema"
-    //         Condicion = "Zona urbanizada a menos de 500m"
-    //         Descripcion = result.elements[0].tags.name
-    //         this.condicionesRiesgo.push(Condicion + '. : ' + Descripcion);
-    //       }
-    //     }
-    //   }
-    // });
+
     return;
   }
 
@@ -528,7 +505,7 @@ export class RiesgoComponent implements OnInit {
         'area.all_areas[natural=wood]->.forest;' +
         '(way(pivot.forest);>;node(area.forest);)' +
         ';out meta;';
-      await this.httpService.get(`${environment.urlOverpassApi}${Consulta}`).subscribe((result) => {
+      await this.httpService.get(`${environment.urlOverpassApi}${Consulta}`).then((result: any) => {
         if (result.elements.length > 0) {
           this.factorRiesgo = 4;
           let Condicion = "Foco de calor en un bosque natural";
@@ -537,22 +514,10 @@ export class RiesgoComponent implements OnInit {
           // CondicionesRiesgo.push(Condicion + '. : ' + Descripcion);
           this.usoDelSuelo.push(Condicion);
         }
+      }, (error) => {
+        console.error('tipo suelo bosque', error);
       });
-      // $.ajax({
-      //   url: UrlOverpassApi + Consulta,
-      //   async: false,
-      //   dataType: 'json',
-      //   success(result) {
-      //     if (result.elements.length > 0) {
-      //       FactorRiesgo = 4;
-      //       Situacion = "Alto"
-      //       Condicion = "Foco de calor en un bosque natural"
-      //       Descripcion = ""
-      //       TipoSuelo = "Bosque";
-      //       CondicionesRiesgo.push(Condicion + '. : ' + Descripcion);
-      //     }
-      //   }
-      // });
+
     }
 
 
@@ -562,7 +527,7 @@ export class RiesgoComponent implements OnInit {
         'area.all_areas[landuse=forest]->.forest;' +
         '(way(pivot.forest);>;node(area.forest);)' +
         ';out meta;';
-      await this.httpService.get(`${environment.urlOverpassApi}${Consulta}`).subscribe((result) => {
+      await this.httpService.get(`${environment.urlOverpassApi}${Consulta}`).then((result: any) => {
         if (result.elements.length > 0) {
           this.factorRiesgo = 4;
           let Condicion = "Foco de calor en una plantacion forestal";
@@ -571,22 +536,10 @@ export class RiesgoComponent implements OnInit {
           // CondicionesRiesgo.push(Condicion + '. : ' + Descripcion);
           this.usoDelSuelo.push(Condicion);
         }
+      }, (error) => {
+        console.error('tipo suelo Plantación Forestal', error);
       });
-      // $.ajax({
-      //   url: UrlOverpassApi + Consulta,
-      //   async: false,
-      //   dataType: 'json',
-      //   success(result) {
-      //     if (result.elements.length > 0) {
-      //       FactorRiesgo = 4;
-      //       Situacion = "Alto"
-      //       Condicion = "Foco de calor en una plantacion forestal"
-      //       Descripcion = ""
-      //       TipoSuelo = "Plantación Forestal";
-      //       CondicionesRiesgo.push(Condicion + '. : ' + Descripcion);
-      //     }
-      //   }
-      // });
+
     }
 
     // Plantacion Agricola . Tierra de Cultivo
@@ -595,7 +548,7 @@ export class RiesgoComponent implements OnInit {
         'area.all_areas[landuse=farmland]->.forest;' +
         '(way(pivot.forest);>;node(area.forest);)' +
         ';out meta;';
-      await this.httpService.get(`${environment.urlOverpassApi}${Consulta}`).subscribe((result) => {
+      await this.httpService.get(`${environment.urlOverpassApi}${Consulta}`).then((result: any) => {
         if (result.elements.length > 0) {
           this.factorRiesgo = 3;
           let Condicion = "Foco de calor en un tierras de cultivo"
@@ -604,22 +557,10 @@ export class RiesgoComponent implements OnInit {
           // CondicionesRiesgo.push(Condicion + '. : ' + Descripcion);
           this.usoDelSuelo.push(Condicion);
         }
+      }, (error) => {
+        console.error('tipo suelo Plantación agrícola', error);
       });
-      // $.ajax({
-      //   url: UrlOverpassApi + Consulta,
-      //   async: false,
-      //   dataType: 'json',
-      //   success(result) {
-      //     if (result.elements.length > 0) {
-      //       FactorRiesgo = 3;
-      //       Situacion = "Medio"
-      //       Condicion = "Foco de calor en un tierras de cultivo"
-      //       Descripcion = ""
-      //       TipoSuelo = "Plantación agrícola";
-      //       CondicionesRiesgo.push(Condicion + '. : ' + Descripcion);
-      //     }
-      //   }
-      // });
+
     }
 
     // Pastizales
@@ -628,7 +569,7 @@ export class RiesgoComponent implements OnInit {
         'area.all_areas[natural=grassland]->.forest;' +
         '(way(pivot.forest);>;node(area.forest);)' +
         ';out meta;';
-      await this.httpService.get(`${environment.urlOverpassApi}${Consulta}`).subscribe((result) => {
+      await this.httpService.get(`${environment.urlOverpassApi}${Consulta}`).then((result: any) => {
         if (result.elements.length > 0) {
           this.factorRiesgo = 4;
           let Condicion = "Foco de calor en un pastizal";
@@ -637,22 +578,10 @@ export class RiesgoComponent implements OnInit {
           // CondicionesRiesgo.push(Condicion + '. : ' + Descripcion);
           this.usoDelSuelo.push(Condicion);
         }
-      })
-      // $.ajax({
-      //   url: UrlOverpassApi + Consulta,
-      //   async: false,
-      //   dataType: 'json',
-      //   success(result) {
-      //     if (result.elements.length > 0) {
-      //       FactorRiesgo = 4;
-      //       Situacion = "Muy Alto"
-      //       Condicion = "Foco de calor en un pastizal"
-      //       Descripcion = ""
-      //       TipoSuelo = "Pastizal";
-      //       CondicionesRiesgo.push(Condicion + '. : ' + Descripcion);
-      //     }
-      //   }
-      // });
+      }, (error) => {
+        console.error('tipo suelo Pastizal', error);
+      });
+
     }
 
     // Matorrales
@@ -662,7 +591,7 @@ export class RiesgoComponent implements OnInit {
         '(way(pivot.forest);>;node(area.forest);)' +
         ';out meta;';
 
-      await this.httpService.get(`${environment.urlOverpassApi}${Consulta}`).subscribe((result) => {
+      await this.httpService.get(`${environment.urlOverpassApi}${Consulta}`).then((result: any) => {
         if (result.elements.length > 0) {
           this.factorRiesgo = 2;
           let Condicion = "Foco de calor en un matorral o capuera";
@@ -671,22 +600,10 @@ export class RiesgoComponent implements OnInit {
           // CondicionesRiesgo.push(Condicion + '. : ' + Descripcion);
           this.usoDelSuelo.push(Condicion);
         }
+      }, (error) => {
+        console.error('tipo suelo Matorral', error);
       });
-      // $.ajax({
-      //   url: UrlOverpassApi + Consulta,
-      //   async: false,
-      //   dataType: 'json',
-      //   success(result) {
-      //     if (result.elements.length > 0) {
-      //       FactorRiesgo = 2;
-      //       Situacion = "Moderado"
-      //       Condicion = "Foco de calor en un matorral o capuera"
-      //       Descripcion = ""
-      //       TipoSuelo = "Matorral";
-      //       CondicionesRiesgo.push(Condicion + '. : ' + Descripcion);
-      //     }
-      //   }
-      // });
+
     }
 
     // Praderas. Pasturas
@@ -695,7 +612,7 @@ export class RiesgoComponent implements OnInit {
         'area.all_areas[landuse=meadow]->.forest;' +
         '(way(pivot.forest);>;node(area.forest);)' +
         ';out meta;';
-      await this.httpService.get(`${environment.urlOverpassApi}${Consulta}`).subscribe((result) => {
+      await this.httpService.get(`${environment.urlOverpassApi}${Consulta}`).then((result: any) => {
         if (result.elements.length > 0) {
           this.factorRiesgo = 1;
           let Condicion = "Foco de calor en una pradera o pastoreo";
@@ -704,28 +621,16 @@ export class RiesgoComponent implements OnInit {
           // CondicionesRiesgo.push(Condicion + '. : ' + Descripcion);
           this.usoDelSuelo.push(Condicion);
         }
+      }, (error) => {
+        console.error('tipo suelo Pradera. Pastoreo', error);
       });
-      // $.ajax({
-      //   url: UrlOverpassApi + Consulta,
-      //   async: false,
-      //   dataType: 'json',
-      //   success(result) {
-      //     if (result.elements.length > 0) {
-      //       FactorRiesgo = 1;
-      //       Situacion = "Bajo"
-      //       Condicion = "Foco de calor en una pradera o pastoreo"
-      //       Descripcion = ""
-      //       TipoSuelo = "Pradera. Pastoreo";
-      //       CondicionesRiesgo.push(Condicion + '. : ' + Descripcion);
-      //     }
-      //   }
-      // });
+
     }
 
     return;
   }
 
-  calcularTopografia() {
+  async calcularTopografia() {
     ////////////////////////////////// TOPOGRAFIA //////////////////////////////
 
 
@@ -771,7 +676,7 @@ export class RiesgoComponent implements OnInit {
 
 
     // Lectura de los 8 puntos circundantes las coordenadas de origen 
-    this.httpService.get(`https://api.opentopodata.org/v1/srtm30m?locations=${Coordenadas}`).subscribe((datos) => {
+    await this.httpService.get(`https://api.opentopodata.org/v1/srtm30m?locations=${Coordenadas}`).then((datos: any) => {
       // $.getJSON("https://api.opentopodata.org/v1/srtm30m?locations=" + Coordenadas,
       //   function (datos) {
 
@@ -857,6 +762,8 @@ export class RiesgoComponent implements OnInit {
     // 1 si ambos tienen la misma dirección
     // 0 si tienen direcciones enfrentadas en 180º
 
+    // TODO corregir el viento {direccionViento}
+
     // Calculo del coeficiente Rumbo/Viento  cos(declive) / cos(viento)
     // Resultados: 0 -- 1
     let RV = (Math.abs(Math.cos((this.orientacionDeclive * this.coeficienteRadianes)) + Math.cos((this.direccionViento * this.coeficienteRadianes))) / 2).toFixed(2);
@@ -872,12 +779,28 @@ export class RiesgoComponent implements OnInit {
     // CondicionesRiesgo.push("Factor RVI (Rumbo/Inclinacion/Dirección del Viento): " + RVI + "  Valores: 0 - 15");
 
     this.factoresCombinados.rv = RV;
+    this.factoresCombinados.rvPercent = (parseFloat(RV) * 100) / 1
     this.factoresCombinados.rvi = RVI;
+    this.factoresCombinados.rviPercent = (parseFloat(RVI) * 100) / 15
 
     this.loadingFactoresCombinados = false;
   }
 
+  onMapReady(map: Map) {
+    console.log('map redi')
+    this.map = map;
+    this.map.setZoom(16);
+    this.map.panTo(latLng(this.latitud, this.longitud));
+    this.map.addLayer(circle([this.latitud, this.longitud], 100, { color: 'yellow', opacity: 1, fillColor: 'red', fillOpacity: .4 }));
 
+  }
+
+  calcularPrediccionPropagacion() {
+
+    console.log('flyto');
+
+    this.loadingPrediccionPropagacion = false;
+  }
 
 
 }

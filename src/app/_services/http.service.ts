@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { catchError, Observable, retry, throwError } from 'rxjs';
+import { catchError, Observable, retry, throwError, lastValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -10,21 +10,26 @@ export class HttpService {
 
   constructor(private httpClient: HttpClient) { }
 
-  get(url: string): Observable<any> {
+  // get(url: string): Observable<any> {
 
-    // let endpoint = resource;
-    // if (id) {
-    //   endpoint = resource + '/' + id;
-    // }
+  //   // let endpoint = resource;
+  //   // if (id) {
+  //   //   endpoint = resource + '/' + id;
+  //   // }
 
-    let params = new HttpParams();
+  //   let params = new HttpParams();
 
-    return this.httpClient.get(url)
-      .pipe(
-        retry(1),
-        catchError(this.handleError)
-      );
+  //   return this.httpClient.get(url)
+  //     .pipe(
+  //       retry(1),
+  //       catchError(this.handleError)
+  //     );
 
+  // }
+
+  async get(url: string){
+    let data = await lastValueFrom(this.httpClient.get(url));
+    return data;
   }
 
   handleError(error: any) {

@@ -39,7 +39,7 @@
                             <div class="overlay" *ngIf="loadingRiesgo">
                                 <i class="fas fa-2x fa-sync-alt fa-spin"></i>
                             </div>
-                            <span class="info-box-icon"><i class="far fa-bookmark"></i></span>
+                            <span class="info-box-icon"><i class="fas fa-tachometer-alt"></i></span>
 
                             <div class="info-box-content">
 
@@ -98,17 +98,18 @@
                             </div>
                             <!-- /.card-header -->
                             <div class="card-body">
-                                <ul>
-                                    <li>Datos del tiempo al : {{ clima.fecha }} Uhr</li>
-                                    <li>Condición: {{clima.weatherconditiondescription}}</li>
-                                    <li>Temperatura: {{clima.temperaturecelsius}} °C</li>
-                                    <li>Presión atmosférica: {{clima.airpressure}} hPa</li>
-                                    <li>Humedad: {{ clima.airhumidity }}%</li>
-                                    <li>Cobertura de Nubes: {{clima.cloudcoverage}}%</li>
-                                    <li>Velocidad del Viento: {{clima.windspeedkmh}} Km/h</li>
-                                    <li>Dirección del Viento: {{clima.direccionViento}} </li>
-                                    <li>Estación Meteorológica: {{clima.estacionMeteorologica}}</li>
-                                </ul>
+
+                                <strong>Datos del tiempo al :</strong> {{ clima.fecha }} Uhr <br>
+                                <strong>Condición:</strong> {{clima.weatherconditiondescription}} <br>
+                                <strong>Temperatura:</strong> {{clima.temperaturecelsius}} °C <br>
+                                <strong>Presión atmosférica:</strong> {{clima.airpressure}} hPa <br>
+                                <strong>Humedad:</strong> {{ clima.airhumidity }}% <br>
+                                <strong>Cobertura de Nubes:</strong> {{clima.cloudcoverage}}% <br>
+                                <strong>Velocidad del Viento:</strong> {{clima.windspeedkmh}} Km/h <br>
+                                <strong>Dirección del Viento:</strong> {{clima.direccionViento}} <i class="fas fa-arrow-up" [style]="'transform: rotate('+clima.DireccionViento+'deg)'"></i>
+                                <br>
+                                <strong>Estación Meteorológica:</strong> {{clima.estacionMeteorologica}} <br>
+
                             </div>
                             <div class="overlay dark" *ngIf="loadingClima">
                                 <i class="fas fa-2x fa-sync-alt fa-spin"></i>
@@ -117,23 +118,52 @@
                         </div>
                     </div>
                     <div class="col-6">
-                        <div class="card card-primary">
+
+                        <h5 class="mb-4">Topografía</h5>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="info-box bg-info">
+                                    <span class="info-box-icon"><i class="fas fa-grip-lines" [style]="'transform: rotate('+anguloInclinacion+'deg)'"></i></span>
+
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Inclinación</span>
+                                        <span class="info-box-number">{{ anguloInclinacion }} º </span>
+
+
+                                    </div>
+                                    <!-- /.info-box-content -->
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="info-box bg-info">
+                                    <span class="info-box-icon">
+                                        <i class="fas fa-arrow-up" [style]="'transform: rotate('+orientacionDeclive+'deg)'"></i>
+                                    </span>
+
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Orientación Declive</span>
+                                        <span class="info-box-number">{{ orientacionDeclive }} º</span>
+
+
+                                    </div>
+                                    <!-- /.info-box-content -->
+                                </div>
+                            </div>
+                        </div>
+                        <!-- <div class="card card-primary">
                             <div class="card-header">
                                 <h3 class="card-title">Topografía</h3>
 
                             </div>
-                            <!-- /.card-header -->
                             <div class="card-body">
-                                <ul>
-                                    <li>Inclinación: {{ anguloInclinacion.toFixed(2) }} º</li>
-                                    <li>Orientación Declive: {{ orientacionDeclive.toFixed(2) }} º</li>
-                                </ul>
+                                <strong>Inclinación:</strong> {{ anguloInclinacion.toFixed(2) }} º <br>
+                                <strong>Orientación Declive:</strong> {{ orientacionDeclive.toFixed(2) }} º
+
                             </div>
                             <div class="overlay dark" *ngIf="loadingTopoGrafia">
                                 <i class="fas fa-2x fa-sync-alt fa-spin"></i>
                             </div>
-                            <!-- /.card-body -->
-                        </div>
+                        </div> -->
 
                         <div class="card card-primary">
                             <div class="card-header">
@@ -154,47 +184,133 @@
                     </div>
                 </div>
 
+                <h5 class="mt-4 mb-2">Factores Combinados</h5>
                 <div class="row">
+                    <div class="col-6">
+                        <div class="info-box bg-gradient-dark">
+                            <div class="overlay dark" *ngIf="loadingFactoresCombinados">
+                                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+                            </div>
+                            <span class="info-box-icon"><i class="far fa-bookmark"></i></span>
+
+                            <div class="info-box-content">
+                                <span class="info-box-text">Factor RV</span>
+                                <span class="info-box-text"><small>(Rumbo de la Inclinación/Dirección del Viento)</small></span>
+                                <span class="info-box-number">
+                                    {{ factoresCombinados.rv }}</span>
+
+                                <div class="progress">
+                                    <div class="progress-bar" [style]="'width:'+ factoresCombinados.rvPercent +'%'"></div>
+                                </div>
+                                <span class="progress-description">
+                                    Valores: 0=Bajo - 1=Alto
+                                </span>
+                            </div>
+                            <!-- /.info-box-content -->
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="info-box bg-gradient-dark">
+                            <div class="overlay dark" *ngIf="loadingFactoresCombinados">
+                                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+                            </div>
+                            <span class="info-box-icon"><i class="far fa-bookmark"></i></span>
+
+                            <div class="info-box-content">
+                                <span class="info-box-text">Factor RVI</span>
+                                <span class="info-box-text"><small>(Rumbo/Inclinacion/Dirección del Viento)</small></span>
+                                <span class="info-box-number">{{ factoresCombinados.rvi }}</span>
+
+                                <div class="progress">
+                                    <!-- <div class="progress-bar" style="width: 70%"></div> -->
+                                    <div class="progress-bar" [style]="'width:'+ factoresCombinados.rviPercent +'%'"></div>
+                                </div>
+                                <span class="progress-description">
+                                    Valores: 0 - 15
+                                </span>
+                            </div>
+                            <!-- /.info-box-content -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- <div class="row">
                     <div class="col-12">
                         <div class="card card-primary">
                             <div class="card-header">
                                 <h3 class="card-title">Factores combinados</h3>
 
                             </div>
-                            <!-- /.card-header -->
                             <div class="card-body">
-                                <ul>
-                                    <li>Factor RV (Rumbo de la Inclinación/Dirección del Viento): {{
-                                        factoresCombinados.rv }} | Valores: 0=Bajo - 1=Alto</li>
-                                    <li>Factor RVI (Rumbo/Inclinacion/Dirección del Viento): {{ factoresCombinados.rvi
-                                        }} | Valores: 0 - 15</li>
-                                </ul>
+
+                                <strong>Factor RV (Rumbo de la Inclinación/Dirección del Viento):</strong> {{
+                                factoresCombinados.rv }} | Valores: 0=Bajo - 1=Alto
+                                <br>
+                                <strong>Factor RVI (Rumbo/Inclinacion/Dirección del Viento):</strong> {{
+                                factoresCombinados.rvi
+                                }} | Valores: 0 - 15
+
                             </div>
                             <div class="overlay dark" *ngIf="loadingFactoresCombinados">
                                 <i class="fas fa-2x fa-sync-alt fa-spin"></i>
                             </div>
-                            <!-- /.card-body -->
+
                         </div>
                     </div>
-                </div>
+                </div> -->
 
                 <div class="row">
                     <div class="col-12">
                         <div class="card card-primary">
                             <div class="card-header">
-                                <h3 class="card-title">Predicción de propagación</h3>
+                                <h3 class="card-title">Predicción de la Propagación (estimación multivariada)</h3>
 
                             </div>
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-6">
-                                        <ul>
-                                            <li></li>
-                                        </ul>
+
+                                        <table class="table table-striped table-valign-middle">
+                                            <thead>
+                                                <tr>
+                                                    <th>Hora</th>
+                                                    <th>Posición</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+
+                                                <tr>
+                                                    <td>Actual</td>
+                                                    <td>{{ latitud }}, {{ longitud }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>+1 h</td>
+                                                    <td></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>+2 h</td>
+                                                    <td></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>+3 h</td>
+                                                    <td></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>+4 h</td>
+                                                    <td></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>+5 h</td>
+                                                    <td></td>
+                                                </tr>
+
+                                            </tbody>
+                                        </table>
+
                                     </div>
                                     <div class="col-6">
-                                        <div style="height: 300px;" leaflet [leafletOptions]="options"
-                                            [leafletLayers]="layers">
+                                        <div style="height: 350px;" leaflet [leafletOptions]="mapOptions"
+                                            (leafletMapReady)="onMapReady($event)">
                                         </div>
                                     </div>
                                 </div>
@@ -224,10 +340,9 @@
     <footer class="main-footer">
         <!-- To the right -->
         <div class="float-right d-none d-sm-inline">
-            Versión 2.0.0
+            Fuentes: NASA FIRMS, OpenStreetMap, OpenWeatherMap, OpenTopoMap
         </div>
         <!-- Default to the left -->
-        <strong>Copyright &copy; 2022 <a href="https://sig.misiones.gob.ar/">Ministerio de Ecología</a>.</strong> Todo
-        los derechos reservados.
+        <strong>Copyright &copy; CC BY-SA Int 4.0 - Gobierno de la Provincia de MIsiones.</strong>
     </footer>
 </div>

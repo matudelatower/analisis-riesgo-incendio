@@ -16,6 +16,8 @@ Run `ng build` to build the project. The build artifacts will be stored in the `
 
 - Dont forget create `environment.ts` and `environments.prod.ts` files in `src/environment`.
 
+- To deploy to server `npm run build-prod -- --base-href /mapas/emergencia/riesgo/` 
+
 ## Running unit tests
 
 Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).

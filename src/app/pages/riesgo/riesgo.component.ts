@@ -99,6 +99,8 @@ export class RiesgoComponent implements OnInit {
     rviPercent: 100
   };
 
+  prediccionesPropagacion: any[] = [];
+
   constructor(private route: ActivatedRoute,
     private httpService: HttpService
   ) { }
@@ -789,15 +791,74 @@ export class RiesgoComponent implements OnInit {
   onMapReady(map: Map) {
     console.log('map redi')
     this.map = map;
-    this.map.setZoom(16);
+    this.map.setZoom(14);
     this.map.panTo(latLng(this.latitud, this.longitud));
-    this.map.addLayer(circle([this.latitud, this.longitud], 100, { color: 'yellow', opacity: 1, fillColor: 'red', fillOpacity: .4 }));
+    // this.map.addLayer(circle([this.latitud, this.longitud], 100, { color: 'yellow', opacity: 1, fillColor: 'red', fillOpacity: .4 }));
 
   }
 
   calcularPrediccionPropagacion() {
 
     console.log('flyto');
+
+    let diametro = 100
+    let velocidad = 0.2 // Velocidad del Viento
+    let direccion = 14
+
+    let radioTierra = 6378.1;
+    let coefRadianes = Math.PI / 180;
+    let recorrido = 0;
+
+    let currentLat = this.latitud;
+    let currentLong = this.longitud;
+    // Calculo las posiciones del centro del circulo de afectación
+    for (let iteracion = 0; iteracion < 6; iteracion++) {
+      let velocidadViento = velocidad // m/s convertido a Km/h
+      let DireccionViento = direccion;
+
+      let Angulo = DireccionViento;
+      let distancia = velocidadViento;    // Esto determina la posicion del siguiente punto
+      recorrido = recorrido + distancia;
+
+
+      // Dibuja los circulos en el mapa
+      // let circle = L.circle([this.latitud, this.longitud], diametro, {
+      //   color: 'red',
+      //   fillColor: '#f03',
+      //   fillOpacity: 0.5
+      // }).addTo(map);
+      // circle.bindPopup('Hora: ' + iteracion + '<br>Distancia: ' + recorrido + " km.");
+
+      let mapCircle = circle([currentLat, currentLong], diametro, {
+        color: 'red',
+        fillColor: '#f03',
+        fillOpacity: 0.5
+      });
+      mapCircle.bindPopup('Hora: ' + iteracion + '<br>Distancia: ' + recorrido + " km.");
+
+      this.map?.addLayer(mapCircle);
+
+      let lat1 = currentLat * coefRadianes;
+      let lon1 = currentLong * coefRadianes;
+      let brng = Angulo * coefRadianes;
+      let R = radioTierra;
+      let d = distancia;
+
+      let lat2 = Math.asin(Math.sin(lat1) * Math.cos(d / R) + Math.cos(lat1) * Math.sin(d / R) * Math.cos(brng));
+      let lon2 = lon1 + Math.atan2(Math.sin(brng) * Math.sin(d / R) * Math.cos(lat1), Math.cos(d / R) - Math.sin(lat1) * Math.sin(lat2));
+      let LatitudFin = lat2 * 180 / Math.PI;
+      let LongitudFin = lon2 * 180 / Math.PI;
+
+
+      let hora = iteracion == 0 ? 'Actual' : `+${iteracion} h`;
+      this.prediccionesPropagacion.push({
+        'hora': hora,
+        'latLang': `${parseFloat(currentLat).toFixed(5)}, ${parseFloat(currentLong).toFixed(5)}`
+      });
+
+      currentLat = LatitudFin;
+      currentLong = LongitudFin;
+    }
 
     this.loadingPrediccionPropagacion = false;
   }

@@ -106,7 +106,9 @@
                                 <strong>Humedad:</strong> {{ clima.airhumidity }}% <br>
                                 <strong>Cobertura de Nubes:</strong> {{clima.cloudcoverage}}% <br>
                                 <strong>Velocidad del Viento:</strong> {{clima.windspeedkmh}} Km/h <br>
-                                <strong>Dirección del Viento:</strong> {{clima.direccionViento}} <i class="fas fa-arrow-up" [style]="'transform: rotate('+clima.DireccionViento+'deg)'"></i>
+                                <strong>Dirección del Viento:</strong> {{clima.direccionViento}} <i
+                                    class="fas fa-arrow-up"
+                                    [style]="'transform: rotate('+clima.DireccionViento+'deg)'"></i>
                                 <br>
                                 <strong>Estación Meteorológica:</strong> {{clima.estacionMeteorologica}} <br>
 
@@ -123,13 +125,15 @@
                         <div class="row">
                             <div class="col-6">
                                 <div class="info-box bg-info">
-                                    <span class="info-box-icon"><i class="fas fa-grip-lines" [style]="'transform: rotate('+anguloInclinacion+'deg)'"></i></span>
+                                    <span class="info-box-icon"><i class="fas fa-grip-lines"
+                                            [style]="'transform: rotate('+anguloInclinacion+'deg)'"></i></span>
 
                                     <div class="info-box-content">
                                         <span class="info-box-text">Inclinación</span>
                                         <span class="info-box-number">{{ anguloInclinacion }} º </span>
-
-
+                                    </div>
+                                    <div class="overlay dark" *ngIf="loadingTopoGrafia">
+                                        <i class="fas fa-2x fa-sync-alt fa-spin"></i>
                                     </div>
                                     <!-- /.info-box-content -->
                                 </div>
@@ -137,33 +141,22 @@
                             <div class="col-6">
                                 <div class="info-box bg-info">
                                     <span class="info-box-icon">
-                                        <i class="fas fa-arrow-up" [style]="'transform: rotate('+orientacionDeclive+'deg)'"></i>
+                                        <i class="fas fa-arrow-up"
+                                            [style]="'transform: rotate('+orientacionDeclive+'deg)'"></i>
                                     </span>
 
                                     <div class="info-box-content">
                                         <span class="info-box-text">Orientación Declive</span>
-                                        <span class="info-box-number">{{ orientacionDeclive }} º</span>
-
-
+                                        <span class="info-box-number">{{ orientacionDeclive }} º</span>                                        
+                                    </div>
+                                    <div class="overlay dark" *ngIf="loadingTopoGrafia">
+                                        <i class="fas fa-2x fa-sync-alt fa-spin"></i>
                                     </div>
                                     <!-- /.info-box-content -->
                                 </div>
                             </div>
                         </div>
-                        <!-- <div class="card card-primary">
-                            <div class="card-header">
-                                <h3 class="card-title">Topografía</h3>
-
-                            </div>
-                            <div class="card-body">
-                                <strong>Inclinación:</strong> {{ anguloInclinacion.toFixed(2) }} º <br>
-                                <strong>Orientación Declive:</strong> {{ orientacionDeclive.toFixed(2) }} º
-
-                            </div>
-                            <div class="overlay dark" *ngIf="loadingTopoGrafia">
-                                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
-                            </div>
-                        </div> -->
+                        
 
                         <div class="card card-primary">
                             <div class="card-header">
@@ -195,12 +188,14 @@
 
                             <div class="info-box-content">
                                 <span class="info-box-text">Factor RV</span>
-                                <span class="info-box-text"><small>(Rumbo de la Inclinación/Dirección del Viento)</small></span>
+                                <span class="info-box-text"><small>(Rumbo de la Inclinación/Dirección del
+                                        Viento)</small></span>
                                 <span class="info-box-number">
                                     {{ factoresCombinados.rv }}</span>
 
                                 <div class="progress">
-                                    <div class="progress-bar" [style]="'width:'+ factoresCombinados.rvPercent +'%'"></div>
+                                    <div class="progress-bar" [style]="'width:'+ factoresCombinados.rvPercent +'%'">
+                                    </div>
                                 </div>
                                 <span class="progress-description">
                                     Valores: 0=Bajo - 1=Alto
@@ -218,12 +213,14 @@
 
                             <div class="info-box-content">
                                 <span class="info-box-text">Factor RVI</span>
-                                <span class="info-box-text"><small>(Rumbo/Inclinacion/Dirección del Viento)</small></span>
+                                <span class="info-box-text"><small>(Rumbo/Inclinacion/Dirección del
+                                        Viento)</small></span>
                                 <span class="info-box-number">{{ factoresCombinados.rvi }}</span>
 
                                 <div class="progress">
                                     <!-- <div class="progress-bar" style="width: 70%"></div> -->
-                                    <div class="progress-bar" [style]="'width:'+ factoresCombinados.rviPercent +'%'"></div>
+                                    <div class="progress-bar" [style]="'width:'+ factoresCombinados.rviPercent +'%'">
+                                    </div>
                                 </div>
                                 <span class="progress-description">
                                     Valores: 0 - 15
@@ -233,31 +230,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- <div class="row">
-                    <div class="col-12">
-                        <div class="card card-primary">
-                            <div class="card-header">
-                                <h3 class="card-title">Factores combinados</h3>
-
-                            </div>
-                            <div class="card-body">
-
-                                <strong>Factor RV (Rumbo de la Inclinación/Dirección del Viento):</strong> {{
-                                factoresCombinados.rv }} | Valores: 0=Bajo - 1=Alto
-                                <br>
-                                <strong>Factor RVI (Rumbo/Inclinacion/Dirección del Viento):</strong> {{
-                                factoresCombinados.rvi
-                                }} | Valores: 0 - 15
-
-                            </div>
-                            <div class="overlay dark" *ngIf="loadingFactoresCombinados">
-                                <i class="fas fa-2x fa-sync-alt fa-spin"></i>
-                            </div>
-
-                        </div>
-                    </div>
-                </div> -->
 
                 <div class="row">
                     <div class="col-12">
@@ -278,31 +250,10 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-
-                                                <tr>
-                                                    <td>Actual</td>
-                                                    <td>{{ latitud }}, {{ longitud }}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>+1 h</td>
-                                                    <td></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>+2 h</td>
-                                                    <td></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>+3 h</td>
-                                                    <td></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>+4 h</td>
-                                                    <td></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>+5 h</td>
-                                                    <td></td>
-                                                </tr>
+                                                <tr *ngFor="let prediccionPropagacion of prediccionesPropagacion">
+                                                    <td>{{prediccionPropagacion.hora}}</td>
+                                                    <td>{{prediccionPropagacion.latLang}}</td>
+                                                </tr>                                               
 
                                             </tbody>
                                         </table>
@@ -315,9 +266,9 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- <div class="overlay dark" *ngIf="loadingPrediccionPropagacion">
+                            <div class="overlay dark" style="z-index: 9999;" *ngIf="loadingPrediccionPropagacion">
                                 <i class="fas fa-2x fa-sync-alt fa-spin"></i>
-                            </div> -->
+                            </div>
                         </div>
 
                     </div>

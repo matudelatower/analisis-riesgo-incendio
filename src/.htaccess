@@ -5,4 +5,5 @@ RewriteEngine On
   RewriteRule ^ - [L]
 
   # If the requested resource doesn't exist, use index.html 
-  RewriteRule ^ /mapas/emergencia/riesgo/index.html #parametros server cambiar por el path que corresponda
+  RewriteRule ^ /mapas/emergencia/riesgo/index.html 
+  #parametros server cambiar por el path que corresponda

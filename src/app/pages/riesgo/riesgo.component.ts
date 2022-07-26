@@ -16,6 +16,10 @@ import { Map, Control, DomUtil, ZoomAnimEvent, Layer, MapOptions, tileLayer, lat
 export class RiesgoComponent implements OnInit {
 
   coeficienteRadianes = Math.PI / 180;
+  // e = 2.718281828459045;
+  e = 2.71828;
+  radioTierra = 6378.1;
+  distancia = 50;
 
   latitud: any;
   longitud: any;
@@ -89,7 +93,11 @@ export class RiesgoComponent implements OnInit {
     weathertimenormal: "",
     direccionViento: "",
     estacionMeteorologica: "",
-    fecha: ""
+    fecha: "",
+    hourly: [{
+      'wind_speed': 0,
+      'wind_deg': 0
+    }]
   };
 
   factoresCombinados = {
@@ -100,6 +108,7 @@ export class RiesgoComponent implements OnInit {
   };
 
   prediccionesPropagacion: any[] = [];
+  velocidadPropagacion: any;
 
   constructor(private route: ActivatedRoute,
     private httpService: HttpService
@@ -132,29 +141,31 @@ export class RiesgoComponent implements OnInit {
   //////////////////////////////////////   CLIMA      /////////////////////////////////////
 
   async getClima() {
-    await this.httpService.get(`https://api.openweathermap.org/data/2.5/weather?lat=${this.latitud}&lon=${this.longitud}&lang=es&appid=32a020e350d198b03a3acfbcdd355310`).then((data: any) => {
+    await this.httpService.get(`https://api.openweathermap.org/data/2.5/onecall?lat=${this.latitud}&lon=${this.longitud}&lang=es&exclude={minutely,daily,alerts}&appid=32a020e350d198b03a3acfbcdd355310`).then((data: any) => {
 
       // storing json data in variables
-      this.clima.weatherlocation_lon = data.coord.lon; // lon WGS84
-      this.clima.weatherlocation_lat = data.coord.lat; // lat WGS84
-      this.clima.weatherstationname = data.name // Name of Weatherstation
-      this.clima.weatherstationid = data.id // ID of Weatherstation
-      this.clima.weathertime = data.dt // Time of weatherdata (UTC)
-      this.clima.temperature = data.main.temp; // Kelvin
-      this.clima.airpressure = data.main.pressure; // hPa
-      this.clima.airhumidity = data.main.humidity; // %
-      this.clima.temperature_min = data.main.temp_min; // Kelvin
-      this.clima.temperature_max = data.main.temp_max; // Kelvin
-      this.clima.windspeed = data.wind.speed; // Meter per second
-      this.clima.DireccionViento = data.wind.deg; // Wind from direction x degree from north
-      this.clima.cloudcoverage = data.clouds.all; // Cloudcoverage in %
-      this.clima.weatherconditionid = data.weather[0].id // ID
-      this.clima.weatherconditionstring = data.weather[0].main // Weatheartype
-      this.clima.weatherconditiondescription = data.weather[0].description // Weatherdescription
-      this.clima.weatherconditionicon = data.weather[0].icon // ID of weathericon
+      this.clima.weatherlocation_lon = data.lon; // lon WGS84
+      this.clima.weatherlocation_lat = data.lat; // lat WGS84
+      this.clima.weatherstationname = data.name ? data.name : ''// Name of Weatherstation
+      this.clima.weatherstationid = data.id ? data.id : '' // ID of Weatherstation
+      this.clima.weathertime = data.current.dt // Time of weatherdata (UTC)
+      this.clima.temperature = data.current.temp; // Kelvin
+      this.clima.airpressure = data.current.pressure; // hPa
+      this.clima.airhumidity = data.current.humidity; // %
+      this.clima.temperature_min = data.current.temp_min ? data.current.temp_min : ''; // Kelvin
+      this.clima.temperature_max = data.current.temp_max ? data.current.temp_max : ''; // Kelvin
+      this.clima.windspeed = data.current.wind_speed; // Meter per second
+      this.clima.DireccionViento = data.current.wind_deg; // Wind from direction x degree from north
+      this.clima.cloudcoverage = data.current.clouds; // Cloudcoverage in %
+      this.clima.weatherconditionid = data.current.weather[0].id // ID
+      this.clima.weatherconditionstring = data.current.weather[0].main // Weatheartype
+      this.clima.weatherconditiondescription = data.current.weather[0].description // Weatherdescription
+      this.clima.weatherconditionicon = data.current.weather[0].icon // ID of weathericon
 
-      let DireccionViento = data.wind.deg;
-      this.direccionViento = data.wind.deg;
+      this.clima.hourly = data.hourly;
+
+      let DireccionViento = data.current.wind_deg;
+      this.direccionViento = data.current.wind_deg;
       let airhumidity = this.clima.airhumidity;
 
       // Converting Unix UTC Time
@@ -275,7 +286,11 @@ export class RiesgoComponent implements OnInit {
     this.loadingProximididad = false;
     this.loadingUsoDelSuelo = false;
 
-    await this.calcularTopografia();
+    let topografia: any = await this.calcularTopografia(this.latitud, this.longitud);
+
+    this.anguloInclinacion = topografia.anguloInclinacion;
+    this.orientacionDeclive = topografia.orientacionDeclive;
+    this.loadingTopoGrafia = false;
 
     this.calcularFactoresCombinados();
 
@@ -513,6 +528,7 @@ export class RiesgoComponent implements OnInit {
           let Condicion = "Foco de calor en un bosque natural";
           // Descripcion = "";
           TipoSuelo = "Bosque";
+          this.velocidadPropagacion = 9;
           // CondicionesRiesgo.push(Condicion + '. : ' + Descripcion);
           this.usoDelSuelo.push(Condicion);
         }
@@ -536,6 +552,7 @@ export class RiesgoComponent implements OnInit {
           // Descripcion = ""
           TipoSuelo = "Plantación Forestal";
           // CondicionesRiesgo.push(Condicion + '. : ' + Descripcion);
+          this.velocidadPropagacion = 31;
           this.usoDelSuelo.push(Condicion);
         }
       }, (error) => {
@@ -544,10 +561,10 @@ export class RiesgoComponent implements OnInit {
 
     }
 
-    // Plantacion Agricola . Tierra de Cultivo
+    // Plantacion de Yerba o Té
     if (TipoSuelo == "") {
       var Consulta = 'is_in(' + latitud + ',' + longitud + ')->.all_areas;' +
-        'area.all_areas[landuse=farmland]->.forest;' +
+        'area.all_areas[landuse=orchard]->.forest;' +
         '(way(pivot.forest);>;node(area.forest);)' +
         ';out meta;';
       await this.httpService.get(`${environment.urlOverpassApi}${Consulta}`).then((result: any) => {
@@ -556,6 +573,7 @@ export class RiesgoComponent implements OnInit {
           let Condicion = "Foco de calor en un tierras de cultivo"
           // Descripcion = ""
           TipoSuelo = "Plantación agrícola";
+          this.velocidadPropagacion = 58;
           // CondicionesRiesgo.push(Condicion + '. : ' + Descripcion);
           this.usoDelSuelo.push(Condicion);
         }
@@ -577,6 +595,7 @@ export class RiesgoComponent implements OnInit {
           let Condicion = "Foco de calor en un pastizal";
           // Descripcion = ""
           TipoSuelo = "Pastizal";
+          this.velocidadPropagacion = 37;
           // CondicionesRiesgo.push(Condicion + '. : ' + Descripcion);
           this.usoDelSuelo.push(Condicion);
         }
@@ -599,6 +618,7 @@ export class RiesgoComponent implements OnInit {
           let Condicion = "Foco de calor en un matorral o capuera";
           // Descripcion = ""
           TipoSuelo = "Matorral";
+          this.velocidadPropagacion = 27;
           // CondicionesRiesgo.push(Condicion + '. : ' + Descripcion);
           this.usoDelSuelo.push(Condicion);
         }
@@ -622,6 +642,7 @@ export class RiesgoComponent implements OnInit {
           TipoSuelo = "Pradera. Pastoreo";
           // CondicionesRiesgo.push(Condicion + '. : ' + Descripcion);
           this.usoDelSuelo.push(Condicion);
+          this.velocidadPropagacion = 25;
         }
       }, (error) => {
         console.error('tipo suelo Pradera. Pastoreo', error);
@@ -632,7 +653,7 @@ export class RiesgoComponent implements OnInit {
     return;
   }
 
-  async calcularTopografia() {
+  async calcularTopografia(latitud: any, longitud: any) {
     ////////////////////////////////// TOPOGRAFIA //////////////////////////////
 
 
@@ -643,7 +664,7 @@ export class RiesgoComponent implements OnInit {
     //  Inclinacion
     ///////////////////////////////////////////////////////////////
 
-    let RadioTierra = 6378.1;
+
     let Recorrido = 0;
     let Angulo = 0;
     let Distancia = 50; // Diametro de 100 m
@@ -652,16 +673,16 @@ export class RiesgoComponent implements OnInit {
     let CoefGrados = 180 / Math.PI;
 
     //let Coordenadas = LatitudInicio.toFixed(5) + ',' + LongitudInicio.toFixed(5) + '|';	
-    let Coordenadas = this.latitud + ',' + this.longitud + '|';
+    let Coordenadas = latitud + ',' + longitud + '|';
 
     for (let iteracion = 0; iteracion < 8; iteracion++) {   // Se calculan 8 puntos sobre un circulo de 50 metros
 
       //var LatIni = LatitudInicio.toFixed(5) * CoefRadianes;
       //var LonIni = LongitudInicio.toFixed(5) * CoefRadianes;
-      let LatIni = this.latitud * CoefRadianes;
-      let LonIni = this.longitud * CoefRadianes;
+      let LatIni = latitud * CoefRadianes;
+      let LonIni = longitud * CoefRadianes;
       let AngRad = Angulo * CoefRadianes;
-      let R = RadioTierra;
+      let R = this.radioTierra;
       let d = Distancia / 1000;
 
       // https://izziswift.com/get-lat-long-given-current-point-distance-and-bearing/
@@ -672,10 +693,12 @@ export class RiesgoComponent implements OnInit {
 
 
       Coordenadas = Coordenadas + LatitudFin + ',' + LongitudFin + '|';
-      Angulo = Angulo + 45
+      Angulo = Angulo + 45;
 
     }
 
+    let OrientacionDeclive: any;
+    let AnguloInclinacion: any;
 
     // Lectura de los 8 puntos circundantes las coordenadas de origen 
     await this.httpService.get(`https://api.opentopodata.org/v1/srtm30m?locations=${Coordenadas}`).then((datos: any) => {
@@ -731,10 +754,10 @@ export class RiesgoComponent implements OnInit {
       // CondicionesRiesgo.push("Inclinacion: " +  PorcentajeInclinacion + "%"); 
 
       // Inclinacion (º) = arctg (altura/distancia)
-      let AnguloInclinacion = parseFloat((Math.atan(DiferenciaAltura / dist) * 100).toFixed(2));
+      AnguloInclinacion = parseFloat((Math.atan(DiferenciaAltura / dist) * 100).toFixed(2));
       if ((AnguloInclinacion >= 35)) { this.factorRiesgo = 4; };
       // CondicionesRiesgo.push("Inclinacion: " + AnguloInclinacion + "º");
-      this.anguloInclinacion = AnguloInclinacion;
+      // this.anguloInclinacion = AnguloInclinacion;
 
 
       ///////////////////////////////////
@@ -743,17 +766,24 @@ export class RiesgoComponent implements OnInit {
 
       let y = Math.sin((LonFin - LonIni) * CoefRadianes) * Math.cos(LatFin * CoefRadianes);
       let x = Math.cos(LatIni * CoefRadianes) * Math.sin(LatFin * CoefRadianes) - Math.sin(LatIni * CoefRadianes) * Math.cos(LatFin * CoefRadianes) * Math.cos((LonFin - LonIni) * CoefRadianes);
-      let OrientacionDeclive = parseFloat((((Math.atan2(y, x) * CoefGrados) + 360) % 360).toFixed(2));
+      OrientacionDeclive = parseFloat((((Math.atan2(y, x) * CoefGrados) + 360) % 360).toFixed(2));
 
       // CondicionesRiesgo.push("Orientacion Declive:  " + OrientacionDeclive + "º");
-      this.orientacionDeclive = OrientacionDeclive;
+      // this.orientacionDeclive = OrientacionDeclive;
 
-      this.loadingTopoGrafia = false;
+
       /////// }); // 	$.getJSON("https://api.opentopodatos.org	
+
+
 
 
       // LA TOPOGRAFIA FINALIZA AQUI ////  
     });
+
+    return {
+      'orientacionDeclive': OrientacionDeclive,
+      'anguloInclinacion': AnguloInclinacion
+    }
   }
 
   calcularFactoresCombinados() {
@@ -769,11 +799,11 @@ export class RiesgoComponent implements OnInit {
     // Calculo del coeficiente Rumbo/Viento  cos(declive) / cos(viento)
     // Resultados: 0 -- 1
     let RV = (Math.abs(Math.cos((this.orientacionDeclive * this.coeficienteRadianes)) + Math.cos((this.direccionViento * this.coeficienteRadianes))) / 2).toFixed(2);
-    const e = 2.718281828459045;
+    // const e = 2.718281828459045;
     // RVI = ((e ^ x)-1) ^ 2
     // Resultados: 0 --15
 
-    let RVI = ((((e ^ (this.anguloInclinacion * this.coeficienteRadianes)) - 1) ^ 2) * Number(RV)).toFixed(2);
+    let RVI = ((((this.e ^ (this.anguloInclinacion * this.coeficienteRadianes)) - 1) ^ 2) * Number(RV)).toFixed(2);
 
     // CondicionesRiesgo.push('<br><b>Factores Combinados de Topografía y Clima</b>');
 
@@ -799,26 +829,106 @@ export class RiesgoComponent implements OnInit {
 
   calcularPrediccionPropagacion() {
 
-    console.log('flyto');
+    // let diametro = 100
+    // let velocidad = 0.2 // Velocidad del Viento
+    // let direccion = 14
 
-    let diametro = 100
-    let velocidad = 0.2 // Velocidad del Viento
-    let direccion = 14
+    // let radioTierra = 6378.1;
+    // let coefRadianes = Math.PI / 180;
+    // let recorrido = 0;
 
-    let radioTierra = 6378.1;
-    let coefRadianes = Math.PI / 180;
-    let recorrido = 0;
+    // let currentLat = this.latitud;
+    // let currentLong = this.longitud;
+    // // Calculo las posiciones del centro del circulo de afectación
+    // for (let iteracion = 0; iteracion < 6; iteracion++) {
+    //   let velocidadViento = velocidad // m/s convertido a Km/h
+    //   let DireccionViento = direccion;
+
+    //   let Angulo = DireccionViento;
+    //   let distancia = velocidadViento;    // Esto determina la posicion del siguiente punto
+    //   recorrido = recorrido + distancia;
+
+
+    //   // Dibuja los circulos en el mapa
+    //   // let circle = L.circle([this.latitud, this.longitud], diametro, {
+    //   //   color: 'red',
+    //   //   fillColor: '#f03',
+    //   //   fillOpacity: 0.5
+    //   // }).addTo(map);
+    //   // circle.bindPopup('Hora: ' + iteracion + '<br>Distancia: ' + recorrido + " km.");
+
+    //   let mapCircle = circle([currentLat, currentLong], diametro, {
+    //     color: 'red',
+    //     fillColor: '#f03',
+    //     fillOpacity: 0.5
+    //   });
+    //   mapCircle.bindPopup('Hora: ' + iteracion + '<br>Distancia: ' + recorrido + " km.");
+
+    //   this.map?.addLayer(mapCircle);
+
+    //   let lat1 = currentLat * coefRadianes;
+    //   let lon1 = currentLong * coefRadianes;
+    //   let brng = Angulo * coefRadianes;
+    //   let R = radioTierra;
+    //   let d = distancia;
+
+    //   let lat2 = Math.asin(Math.sin(lat1) * Math.cos(d / R) + Math.cos(lat1) * Math.sin(d / R) * Math.cos(brng));
+    //   let lon2 = lon1 + Math.atan2(Math.sin(brng) * Math.sin(d / R) * Math.cos(lat1), Math.cos(d / R) - Math.sin(lat1) * Math.sin(lat2));
+    //   let LatitudFin = lat2 * 180 / Math.PI;
+    //   let LongitudFin = lon2 * 180 / Math.PI;
+
+
+    //   let hora = iteracion == 0 ? 'Actual' : `+${iteracion} h`;
+    //   this.prediccionesPropagacion.push({
+    //     'hora': hora,
+    //     'latLang': `${parseFloat(currentLat).toFixed(5)}, ${parseFloat(currentLong).toFixed(5)}`
+    //   });
+
+    //   currentLat = LatitudFin;
+    //   currentLong = LongitudFin;
+    // }
+
+    //////////////////////   PREVISION DEL DESPLAZAMIENTO PARA LAS PROXIMAS 5 HORAS /////////////////
+
+    // var DireccionViento = data.current.wind.deg
+    // var VelocidadViento = current.windspeedkmh 
+    // VelocidadPropagacion se define en la función AnalizarTipoDeSuelo(Latitud, Longitud)
+
+    let RV = (Math.abs(Math.cos((this.orientacionDeclive * this.coeficienteRadianes)) + Math.cos((this.direccionViento * this.coeficienteRadianes))) / 2);
+    let RVI = ((((this.e ^ (this.anguloInclinacion * this.coeficienteRadianes)) - 1) ^ 2) * RV);
 
     let currentLat = this.latitud;
     let currentLong = this.longitud;
-    // Calculo las posiciones del centro del circulo de afectación
-    for (let iteracion = 0; iteracion < 6; iteracion++) {
-      let velocidadViento = velocidad // m/s convertido a Km/h
-      let DireccionViento = direccion;
+    let diametro = 100;
 
-      let Angulo = DireccionViento;
-      let distancia = velocidadViento;    // Esto determina la posicion del siguiente punto
-      recorrido = recorrido + distancia;
+    for (let iteracion = 0; iteracion < 6; iteracion++) {
+
+      let velocidadViento = this.clima.hourly[iteracion].wind_speed;
+      let direccionViento = this.clima.hourly[iteracion].wind_deg;
+
+      // coeficinte hora del dia
+      let x = new Date().getTime() + iteracion;
+      let dtf = this.e ^ -(-(1.8 - x / 8) ^ 2);
+
+      let recorrido = this.velocidadPropagacion * RVI * (velocidadViento * 0.1) * dtf;
+
+      let Angulo = direccionViento;
+
+      let lat1 = currentLat * this.coeficienteRadianes;
+      let lon1 = currentLong * this.coeficienteRadianes;
+      let brng = Angulo * this.coeficienteRadianes;
+      let R = this.radioTierra;
+      let d = this.distancia;
+
+      let lat2 = Math.asin(Math.sin(lat1) * Math.cos(d / R) + Math.cos(lat1) * Math.sin(d / R) * Math.cos(brng));
+      let lon2 = lon1 + Math.atan2(Math.sin(brng) * Math.sin(d / R) * Math.cos(lat1), Math.cos(d / R) - Math.sin(lat1) * Math.sin(lat2));
+      let LatitudFin = lat2 * 180 / Math.PI;
+      let LongitudFin = lon2 * 180 / Math.PI;   // Nueva Posicion para la siguiente hora
+
+      // let LatitudInicio = LatitudFin;
+      // let LongitudInicio = LongitudFin;
+      // Mostrar las nuevas coordenadas en la tabla de predicción y
+      // Dibujar los circulos en el mapa
 
 
       // Dibuja los circulos en el mapa
@@ -838,17 +948,14 @@ export class RiesgoComponent implements OnInit {
 
       this.map?.addLayer(mapCircle);
 
-      let lat1 = currentLat * coefRadianes;
-      let lon1 = currentLong * coefRadianes;
-      let brng = Angulo * coefRadianes;
-      let R = radioTierra;
-      let d = distancia;
 
-      let lat2 = Math.asin(Math.sin(lat1) * Math.cos(d / R) + Math.cos(lat1) * Math.sin(d / R) * Math.cos(brng));
-      let lon2 = lon1 + Math.atan2(Math.sin(brng) * Math.sin(d / R) * Math.cos(lat1), Math.cos(d / R) - Math.sin(lat1) * Math.sin(lat2));
-      let LatitudFin = lat2 * 180 / Math.PI;
-      let LongitudFin = lon2 * 180 / Math.PI;
+      // Llamar a la función Topografía y obtener los nuevos valores de: 
+      // AnguloInclinacion 
+      // OrientacionDeclive
 
+      // Cambiar los valores del clima para la siguiente hora
+      // let DireccionViento = data.current.wind.deg[hora];
+      // let VelocidadViento = current.windspeedkmh[hora];
 
       let hora = iteracion == 0 ? 'Actual' : `+${iteracion} h`;
       this.prediccionesPropagacion.push({
@@ -858,6 +965,7 @@ export class RiesgoComponent implements OnInit {
 
       currentLat = LatitudFin;
       currentLong = LongitudFin;
+
     }
 
     this.loadingPrediccionPropagacion = false;

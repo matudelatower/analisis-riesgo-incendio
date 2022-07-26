@@ -907,10 +907,11 @@ export class RiesgoComponent implements OnInit {
       let direccionViento = this.clima.hourly[iteracion].wind_deg;
 
       // coeficinte hora del dia
-      let x = new Date().getTime() + iteracion;
-      let dtf = this.e ^ -(-(1.8 - x / 8) ^ 2);
+      let x = new Date().getHours() + iteracion;
+      
+      let dft = Math.pow(this.e, - (Math.pow((1.8 - x / 8), 2)));
 
-      let recorrido = this.velocidadPropagacion * RVI * (velocidadViento * 0.1) * dtf;
+      let recorrido = this.velocidadPropagacion * RVI * (velocidadViento * 0.1) * dft;
 
       let Angulo = direccionViento;
 

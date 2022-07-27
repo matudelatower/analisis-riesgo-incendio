@@ -919,7 +919,7 @@ export class RiesgoComponent implements OnInit {
       let lon1 = currentLong * this.coeficienteRadianes;
       let brng = Angulo * this.coeficienteRadianes;
       let R = this.radioTierra;
-      let d = this.distancia;
+      let d = recorrido;
 
       let lat2 = Math.asin(Math.sin(lat1) * Math.cos(d / R) + Math.cos(lat1) * Math.sin(d / R) * Math.cos(brng));
       let lon2 = lon1 + Math.atan2(Math.sin(brng) * Math.sin(d / R) * Math.cos(lat1), Math.cos(d / R) - Math.sin(lat1) * Math.sin(lat2));

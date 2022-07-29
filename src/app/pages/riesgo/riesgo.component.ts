@@ -108,7 +108,8 @@ export class RiesgoComponent implements OnInit {
   };
 
   prediccionesPropagacion: any[] = [];
-  velocidadPropagacion: any;
+  // queda en 10 por defecto hasta que overpass-api responda bien sin timeout
+  velocidadPropagacion = 10;
 
   constructor(private route: ActivatedRoute,
     private httpService: HttpService
@@ -941,7 +942,7 @@ export class RiesgoComponent implements OnInit {
       let brng = Angulo * this.coeficienteRadianes;
       let R = this.radioTierra;
       let d = recorrido;
-
+      
       let lat2 = Math.asin(Math.sin(lat1) * Math.cos(d / R) + Math.cos(lat1) * Math.sin(d / R) * Math.cos(brng));
       let lon2 = lon1 + Math.atan2(Math.sin(brng) * Math.sin(d / R) * Math.cos(lat1), Math.cos(d / R) - Math.sin(lat1) * Math.sin(lat2));
       let LatitudFin = lat2 * 180 / Math.PI;

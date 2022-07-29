@@ -310,7 +310,7 @@ export class RiesgoComponent implements OnInit {
         // Spherical Law of Cosines   // http://www.movable-type.co.uk/scripts/latlong.html
         const Distancia = (Math.acos(Math.sin(latitud * this.coeficienteRadianes) * Math.sin(LatitudControl * this.coeficienteRadianes) + Math.cos(latitud * this.coeficienteRadianes) * Math.cos(LatitudControl * this.coeficienteRadianes) * Math.cos(LongitudControl * this.coeficienteRadianes - longitud * this.coeficienteRadianes)) * 6371000);
         if (Distancia <= 1000) {
-          this.factorRiesgo = 5;
+          this.factorRiesgo = this.factorRiesgo <= 5 ? 5 : this.factorRiesgo;
           let condicion = "" + data.features[i].properties.name + " a " + parseInt(Distancia.toString()) + " metros";
           this.condicionesRiesgo.push(condicion);
         }
@@ -330,7 +330,8 @@ export class RiesgoComponent implements OnInit {
         const Distancia = (Math.acos(Math.sin(latitud * this.coeficienteRadianes) * Math.sin(LatitudControl * this.coeficienteRadianes) + Math.cos(latitud * this.coeficienteRadianes) * Math.cos(LatitudControl * this.coeficienteRadianes) * Math.cos(LongitudControl * this.coeficienteRadianes - longitud * this.coeficienteRadianes)) * 6371000);
 
         if (Distancia <= 500) {
-          this.factorRiesgo = 4;
+          // this.factorRiesgo = 4;
+          this.factorRiesgo = this.factorRiesgo <= 4 ? 4 : this.factorRiesgo;
           let condicion = "Estación de Servicio " + data.features[i].properties.name + " a " + parseInt(Distancia.toString()) + " metros";
           this.condicionesRiesgo.push(condicion);
         }
@@ -351,7 +352,8 @@ export class RiesgoComponent implements OnInit {
         // Spherical Law of Cosines   // http://www.movable-type.co.uk/scripts/latlong.html
         const Distancia = (Math.acos(Math.sin(latitud * this.coeficienteRadianes) * Math.sin(LatitudControl * this.coeficienteRadianes) + Math.cos(latitud * this.coeficienteRadianes) * Math.cos(LatitudControl * this.coeficienteRadianes) * Math.cos(LongitudControl * this.coeficienteRadianes - longitud * this.coeficienteRadianes)) * 6371000);
         if (Distancia <= 500) {
-          this.factorRiesgo = 4;
+          // this.factorRiesgo = 4;
+          this.factorRiesgo = this.factorRiesgo <= 4 ? 4 : this.factorRiesgo;
           let condicion = "Depósito de Gas a " + parseInt(Distancia.toString()) + " metros";
           this.condicionesRiesgo.push(condicion);
         }
@@ -370,7 +372,8 @@ export class RiesgoComponent implements OnInit {
         // Spherical Law of Cosines   // http://www.movable-type.co.uk/scripts/latlong.html
         const Distancia = (Math.acos(Math.sin(latitud * this.coeficienteRadianes) * Math.sin(LatitudControl * this.coeficienteRadianes) + Math.cos(latitud * this.coeficienteRadianes) * Math.cos(LatitudControl * this.coeficienteRadianes) * Math.cos(LongitudControl * this.coeficienteRadianes - longitud * this.coeficienteRadianes)) * 6371000);
         if (Distancia <= 500) {
-          this.factorRiesgo = 4;
+          // this.factorRiesgo = 4;
+          this.factorRiesgo = this.factorRiesgo <= 4 ? 4 : this.factorRiesgo;
 
           let Nombre = data.features[i].properties.name;
 
@@ -395,7 +398,8 @@ export class RiesgoComponent implements OnInit {
         // Spherical Law of Cosines   // http://www.movable-type.co.uk/scripts/latlong.html
         const Distancia = ((Math.acos(Math.sin(latitud * this.coeficienteRadianes) * Math.sin(LatitudControl * this.coeficienteRadianes) + Math.cos(latitud * this.coeficienteRadianes) * Math.cos(LatitudControl * this.coeficienteRadianes) * Math.cos(LongitudControl * this.coeficienteRadianes - longitud * this.coeficienteRadianes)) * 6371000));
         if (Distancia <= 500) {
-          this.factorRiesgo = 3;
+          // this.factorRiesgo = 3;
+          this.factorRiesgo = this.factorRiesgo <= 3 ? 3 : this.factorRiesgo;
           let condicion = "" + data.features[i].properties.name + " a " + parseInt(Distancia.toString()) + " metros";
           this.condicionesRiesgo.push(condicion);
         }
@@ -415,7 +419,8 @@ export class RiesgoComponent implements OnInit {
         // Spherical Law of Cosines   // http://www.movable-type.co.uk/scripts/latlong.html
         const Distancia = ((Math.acos(Math.sin(latitud * this.coeficienteRadianes) * Math.sin(LatitudControl * this.coeficienteRadianes) + Math.cos(latitud * this.coeficienteRadianes) * Math.cos(LatitudControl * this.coeficienteRadianes) * Math.cos(LongitudControl * this.coeficienteRadianes - longitud * this.coeficienteRadianes)) * 6371000));
         if (Distancia <= 500) {
-          this.factorRiesgo = 2;
+          // this.factorRiesgo = 2;
+          this.factorRiesgo = this.factorRiesgo <= 2 ? 2 : this.factorRiesgo;
           let Nombre = data.features[i].properties.name;
 
           if (typeof Nombre === 'undefined') {
@@ -442,7 +447,8 @@ export class RiesgoComponent implements OnInit {
         // Spherical Law of Cosines   // http://www.movable-type.co.uk/scripts/latlong.html
         const Distancia = ((Math.acos(Math.sin(latitud * this.coeficienteRadianes) * Math.sin(LatitudControl * this.coeficienteRadianes) + Math.cos(latitud * this.coeficienteRadianes) * Math.cos(LatitudControl * this.coeficienteRadianes) * Math.cos(LongitudControl * this.coeficienteRadianes - longitud * this.coeficienteRadianes)) * 6371000));
         if (Distancia <= 500) {
-          this.factorRiesgo = 3;
+          // this.factorRiesgo = 3;
+          this.factorRiesgo = this.factorRiesgo <= 3 ? 3 : this.factorRiesgo;
           let condicion = "Estacón transformadora de energía" + " a " + parseInt(Distancia.toString()) + " metros";
           this.condicionesRiesgo.push(condicion);
         }
@@ -463,7 +469,8 @@ export class RiesgoComponent implements OnInit {
           // Spherical Law of Cosines   // http://www.movable-type.co.uk/scripts/latlong.html
           const Distancia = ((Math.acos(Math.sin(latitud * this.coeficienteRadianes) * Math.sin(LatitudControl * this.coeficienteRadianes) + Math.cos(latitud * this.coeficienteRadianes) * Math.cos(LatitudControl * this.coeficienteRadianes) * Math.cos(LongitudControl * this.coeficienteRadianes - longitud * this.coeficienteRadianes)) * 6371000));
           if (Distancia <= 100) {
-            this.factorRiesgo = 1;
+            // this.factorRiesgo = 1;
+            this.factorRiesgo = this.factorRiesgo <= 1 ? 1 : this.factorRiesgo;
             let condicion = "Línea de Alta tensión " + data.features[i].properties.name + " a " + parseInt(Distancia.toString()) + " metros";
             this.condicionesRiesgo.push(condicion);
             if (Distancia <= DistanciaMenor) {  // Terminar de Revisar
@@ -484,7 +491,8 @@ export class RiesgoComponent implements OnInit {
     await this.httpService.get(`${environment.urlOverpassApi}${queryParam}`).then((data: any) => {
       if (data.elements.length > 0) {
         if (data.elements[0].tags.boundary == "protected_area") {
-          this.factorRiesgo = 5;
+          // this.factorRiesgo = 5;
+          this.factorRiesgo = this.factorRiesgo <= 5 ? 5 : this.factorRiesgo;
           let condicion = "Reserva Natural a menos de 2000m";
           let descripcion = data.elements[0].tags.name;
           this.condicionesRiesgo.push(condicion + '. : ' + descripcion);
@@ -502,7 +510,8 @@ export class RiesgoComponent implements OnInit {
     await this.httpService.get(`${environment.urlOverpassApi}${queryParam}`).then((data: any) => {
       if (data.elements.length > 0) {
         if (data.elements[0].tags.landuse == "residential") {
-          this.factorRiesgo = 5;
+          // this.factorRiesgo = 5;
+          this.factorRiesgo = this.factorRiesgo <= 5 ? 5 : this.factorRiesgo;
           let condicion = "Zona urbanizada a menos de 500m";
           let descripcion = data.elements[0].tags.name
           this.condicionesRiesgo.push(condicion + '. : ' + descripcion);
@@ -524,7 +533,8 @@ export class RiesgoComponent implements OnInit {
         ';out meta;';
       await this.httpService.get(`${environment.urlOverpassApi}${Consulta}`).then((result: any) => {
         if (result.elements.length > 0) {
-          this.factorRiesgo = 4;
+          // this.factorRiesgo = 4;
+          this.factorRiesgo = this.factorRiesgo <= 4 ? 4 : this.factorRiesgo;
           let Condicion = "Foco de calor en un bosque natural";
           // Descripcion = "";
           TipoSuelo = "Bosque";
@@ -547,7 +557,8 @@ export class RiesgoComponent implements OnInit {
         ';out meta;';
       await this.httpService.get(`${environment.urlOverpassApi}${Consulta}`).then((result: any) => {
         if (result.elements.length > 0) {
-          this.factorRiesgo = 4;
+          // this.factorRiesgo = 4;
+          this.factorRiesgo = this.factorRiesgo <= 4 ? 4 : this.factorRiesgo;
           let Condicion = "Foco de calor en una plantacion forestal";
           // Descripcion = ""
           TipoSuelo = "Plantación Forestal";
@@ -569,7 +580,8 @@ export class RiesgoComponent implements OnInit {
         ';out meta;';
       await this.httpService.get(`${environment.urlOverpassApi}${Consulta}`).then((result: any) => {
         if (result.elements.length > 0) {
-          this.factorRiesgo = 3;
+          // this.factorRiesgo = 3;
+          this.factorRiesgo = this.factorRiesgo <= 3 ? 3 : this.factorRiesgo;
           let Condicion = "Foco de calor en un tierras de cultivo"
           // Descripcion = ""
           TipoSuelo = "Plantación agrícola";
@@ -591,7 +603,8 @@ export class RiesgoComponent implements OnInit {
         ';out meta;';
       await this.httpService.get(`${environment.urlOverpassApi}${Consulta}`).then((result: any) => {
         if (result.elements.length > 0) {
-          this.factorRiesgo = 4;
+          // this.factorRiesgo = 4;
+          this.factorRiesgo = this.factorRiesgo <= 4 ? 4 : this.factorRiesgo;
           let Condicion = "Foco de calor en un pastizal";
           // Descripcion = ""
           TipoSuelo = "Pastizal";
@@ -614,7 +627,8 @@ export class RiesgoComponent implements OnInit {
 
       await this.httpService.get(`${environment.urlOverpassApi}${Consulta}`).then((result: any) => {
         if (result.elements.length > 0) {
-          this.factorRiesgo = 2;
+          // this.factorRiesgo = 2;
+          this.factorRiesgo = this.factorRiesgo <= 2 ? 2 : this.factorRiesgo;
           let Condicion = "Foco de calor en un matorral o capuera";
           // Descripcion = ""
           TipoSuelo = "Matorral";
@@ -636,7 +650,8 @@ export class RiesgoComponent implements OnInit {
         ';out meta;';
       await this.httpService.get(`${environment.urlOverpassApi}${Consulta}`).then((result: any) => {
         if (result.elements.length > 0) {
-          this.factorRiesgo = 1;
+          // this.factorRiesgo = 1;
+          this.factorRiesgo = this.factorRiesgo <= 1 ? 1 : this.factorRiesgo;
           let Condicion = "Foco de calor en una pradera o pastoreo";
           // Descripcion = ""
           TipoSuelo = "Pradera. Pastoreo";
@@ -750,12 +765,18 @@ export class RiesgoComponent implements OnInit {
 
       let PorcentajeInclinacion = parseFloat(((DiferenciaAltura / dist) * 100).toFixed(2));
       // - Peligro
-      if ((PorcentajeInclinacion >= 35)) { this.factorRiesgo = 4; };
+      if ((PorcentajeInclinacion >= 35)) { 
+        // this.factorRiesgo = 4; 
+        this.factorRiesgo = this.factorRiesgo <= 4 ? 4 : this.factorRiesgo;
+      };
       // CondicionesRiesgo.push("Inclinacion: " +  PorcentajeInclinacion + "%"); 
 
       // Inclinacion (º) = arctg (altura/distancia)
       AnguloInclinacion = parseFloat((Math.atan(DiferenciaAltura / dist) * 100).toFixed(2));
-      if ((AnguloInclinacion >= 35)) { this.factorRiesgo = 4; };
+      if ((AnguloInclinacion >= 35)) { 
+        // this.factorRiesgo = 4; 
+        this.factorRiesgo = this.factorRiesgo <= 4 ? 4 : this.factorRiesgo;
+      };
       // CondicionesRiesgo.push("Inclinacion: " + AnguloInclinacion + "º");
       // this.anguloInclinacion = AnguloInclinacion;
 
@@ -908,10 +929,10 @@ export class RiesgoComponent implements OnInit {
 
       // coeficinte hora del dia
       let x = new Date().getHours() + iteracion;
-      
+
       let dft = Math.pow(this.e, - (Math.pow((1.8 - x / 8), 2)));
 
-      let recorrido = this.velocidadPropagacion * RVI * (velocidadViento * 0.1) * dft;
+      let recorrido = (this.velocidadPropagacion * RVI * (velocidadViento * 0.1) * dft) / 100;
 
       let Angulo = direccionViento;
 
@@ -943,7 +964,7 @@ export class RiesgoComponent implements OnInit {
       let mapCircle = circle([currentLat, currentLong], diametro, {
         color: 'red',
         fillColor: '#f03',
-        fillOpacity: 0.5
+        fillOpacity: 0.3
       });
       mapCircle.bindPopup('Hora: ' + iteracion + '<br>Distancia: ' + recorrido + " km.");
 

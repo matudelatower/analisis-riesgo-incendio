@@ -123,7 +123,22 @@
 
                         <h5 class="mb-4">Topografía</h5>
                         <div class="row">
-                            <div class="col-6">
+                            <div class="col-4">
+                                <div class="info-box bg-info">
+                                    <span class="info-box-icon">
+                                        <i class="fas fa-arrows-alt-v"></i>
+                                    </span>
+
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">Altura</span>
+                                        <span class="info-box-number">{{ altura }} mts</span>                                        
+                                    </div>
+                                    <div class="overlay dark" *ngIf="loadingTopoGrafia">
+                                        <i class="fas fa-2x fa-sync-alt fa-spin"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-4">
                                 <div class="info-box bg-info">
                                     <span class="info-box-icon"><i class="fas fa-grip-lines"
                                             [style]="'transform: rotate('+anguloInclinacion+'deg)'"></i></span>
@@ -135,10 +150,9 @@
                                     <div class="overlay dark" *ngIf="loadingTopoGrafia">
                                         <i class="fas fa-2x fa-sync-alt fa-spin"></i>
                                     </div>
-                                    <!-- /.info-box-content -->
                                 </div>
                             </div>
-                            <div class="col-6">
+                            <div class="col-4">
                                 <div class="info-box bg-info">
                                     <span class="info-box-icon">
                                         <i class="fas fa-arrow-up"
@@ -152,9 +166,8 @@
                                     <div class="overlay dark" *ngIf="loadingTopoGrafia">
                                         <i class="fas fa-2x fa-sync-alt fa-spin"></i>
                                     </div>
-                                    <!-- /.info-box-content -->
                                 </div>
-                            </div>
+                            </div>                            
                         </div>
                         
 

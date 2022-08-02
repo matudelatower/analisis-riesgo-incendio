@@ -61,6 +61,7 @@ export class RiesgoComponent implements OnInit {
   usoDelSuelo: any[] = [];
 
   // Topografía
+  altura = 0;
   orientacionDeclive = 0;
   anguloInclinacion = 0;
 
@@ -289,6 +290,7 @@ export class RiesgoComponent implements OnInit {
 
     let topografia: any = await this.calcularTopografia(this.latitud, this.longitud);
 
+    this.altura = topografia.altura;
     this.anguloInclinacion = topografia.anguloInclinacion;
     this.orientacionDeclive = topografia.orientacionDeclive;
     this.loadingTopoGrafia = false;
@@ -715,6 +717,7 @@ export class RiesgoComponent implements OnInit {
 
     let OrientacionDeclive: any;
     let AnguloInclinacion: any;
+    let altura: any;
 
     // Lectura de los 8 puntos circundantes las coordenadas de origen 
     await this.httpService.get(`https://api.opentopodata.org/v1/srtm30m?locations=${Coordenadas}`).then((datos: any) => {
@@ -766,7 +769,7 @@ export class RiesgoComponent implements OnInit {
 
       let PorcentajeInclinacion = parseFloat(((DiferenciaAltura / dist) * 100).toFixed(2));
       // - Peligro
-      if ((PorcentajeInclinacion >= 35)) { 
+      if ((PorcentajeInclinacion >= 35)) {
         // this.factorRiesgo = 4; 
         this.factorRiesgo = this.factorRiesgo <= 4 ? 4 : this.factorRiesgo;
       };
@@ -774,7 +777,7 @@ export class RiesgoComponent implements OnInit {
 
       // Inclinacion (º) = arctg (altura/distancia)
       AnguloInclinacion = parseFloat((Math.atan(DiferenciaAltura / dist) * 100).toFixed(2));
-      if ((AnguloInclinacion >= 35)) { 
+      if ((AnguloInclinacion >= 35)) {
         // this.factorRiesgo = 4; 
         this.factorRiesgo = this.factorRiesgo <= 4 ? 4 : this.factorRiesgo;
       };
@@ -797,6 +800,7 @@ export class RiesgoComponent implements OnInit {
       /////// }); // 	$.getJSON("https://api.opentopodatos.org	
 
 
+      altura = TablaElevaciones[0][2] = datos.results[0].elevation;
 
 
       // LA TOPOGRAFIA FINALIZA AQUI ////  
@@ -804,7 +808,8 @@ export class RiesgoComponent implements OnInit {
 
     return {
       'orientacionDeclive': OrientacionDeclive,
-      'anguloInclinacion': AnguloInclinacion
+      'anguloInclinacion': AnguloInclinacion,
+      'altura': altura
     }
   }
 
@@ -942,7 +947,7 @@ export class RiesgoComponent implements OnInit {
       let brng = Angulo * this.coeficienteRadianes;
       let R = this.radioTierra;
       let d = recorrido;
-      
+
       let lat2 = Math.asin(Math.sin(lat1) * Math.cos(d / R) + Math.cos(lat1) * Math.sin(d / R) * Math.cos(brng));
       let lon2 = lon1 + Math.atan2(Math.sin(brng) * Math.sin(d / R) * Math.cos(lat1), Math.cos(d / R) - Math.sin(lat1) * Math.sin(lat2));
       let LatitudFin = lat2 * 180 / Math.PI;

@@ -110,7 +110,7 @@
                                     class="fas fa-arrow-up"
                                     [style]="'transform: rotate('+clima.DireccionViento+'deg)'"></i>
                                 <br>
-                                <strong>Estación Meteorológica:</strong> {{clima.estacionMeteorologica}} <br>
+                                <!-- <strong>Estación Meteorológica:</strong> {{clima.estacionMeteorologica}} <br> -->
 
                             </div>
                             <div class="overlay dark" *ngIf="loadingClima">
@@ -131,7 +131,7 @@
 
                                     <div class="info-box-content">
                                         <span class="info-box-text">Altura</span>
-                                        <span class="info-box-number">{{ altura }} mts</span>                                        
+                                        <span class="info-box-number">{{ altura }} m</span>                                        
                                     </div>
                                     <div class="overlay dark" *ngIf="loadingTopoGrafia">
                                         <i class="fas fa-2x fa-sync-alt fa-spin"></i>
@@ -160,7 +160,7 @@
                                     </span>
 
                                     <div class="info-box-content">
-                                        <span class="info-box-text">Orientación Declive</span>
+                                        <span class="info-box-text">Aspecto</span>
                                         <span class="info-box-number">{{ orientacionDeclive }} º</span>                                        
                                     </div>
                                     <div class="overlay dark" *ngIf="loadingTopoGrafia">
@@ -201,7 +201,7 @@
 
                             <div class="info-box-content">
                                 <span class="info-box-text">Factor RV</span>
-                                <span class="info-box-text"><small>(Rumbo de la Inclinación/Dirección del
+                                <span class="info-box-text"><small>(Aspecto/Origen del
                                         Viento)</small></span>
                                 <span class="info-box-number">
                                     {{ factoresCombinados.rv }}</span>
@@ -226,7 +226,7 @@
 
                             <div class="info-box-content">
                                 <span class="info-box-text">Factor RVI</span>
-                                <span class="info-box-text"><small>(Rumbo/Inclinacion/Dirección del
+                                <span class="info-box-text"><small>(Inclinacion/Aspecto/Dirección del
                                         Viento)</small></span>
                                 <span class="info-box-number">{{ factoresCombinados.rvi }}</span>
 
@@ -236,7 +236,7 @@
                                     </div>
                                 </div>
                                 <span class="progress-description">
-                                    Valores: 0 - 15
+                                    Valores: 0 - 190
                                 </span>
                             </div>
                             <!-- /.info-box-content -->

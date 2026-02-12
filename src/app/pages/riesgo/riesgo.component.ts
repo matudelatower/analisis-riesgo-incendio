@@ -23,6 +23,8 @@ export class RiesgoComponent implements OnInit {
 
   latitud: any;
   longitud: any;
+  milisegundos: any; // milisegundos para la espera
+
 
   // leaflet
   private map?: Map;
@@ -66,6 +68,8 @@ export class RiesgoComponent implements OnInit {
   anguloInclinacion = 0;
 
   direccionViento = 0;
+  vectorViento = 0;
+  Angulo = 0;
 
   riesgo = '';
 
@@ -93,7 +97,7 @@ export class RiesgoComponent implements OnInit {
     weatherconditionicon: "",
     weathertimenormal: "",
     direccionViento: "",
-    estacionMeteorologica: "",
+    // estacionMeteorologica: "",
     fecha: "",
     hourly: [{
       'wind_speed': 0,
@@ -198,7 +202,7 @@ export class RiesgoComponent implements OnInit {
       let DireccionVientostring = "Im the wind from direction"; // Wind from direction x as text
 
       if (DireccionViento > 348.75 && DireccionViento <= 11.25) {
-        DireccionVientostring = "Nore";
+        DireccionVientostring = "Norte";
       } else if (DireccionViento > 11.25 && DireccionViento <= 33.75) {
         DireccionVientostring = "Nornoreste";
       } else if (DireccionViento > 33.75 && DireccionViento <= 56.25) {
@@ -239,26 +243,15 @@ export class RiesgoComponent implements OnInit {
       };
 
       this.clima.direccionViento = `${DireccionVientostring} (${DireccionViento}°)`;
-      this.clima.estacionMeteorologica = `${this.clima.weatherstationname} (ID: ${this.clima.weatherstationid})`;
+      // this.clima.estacionMeteorologica = `${this.clima.weatherstationname} (ID: ${this.clima.weatherstationid})`;
       this.clima.temperaturecelsius = temperaturecelsius;
       this.clima.windspeedkmh = windspeedkmh;
-      // CondicionesRiesgo.push("Datos del tiempo al : " + weathertimenormal);
-      // CondicionesRiesgo.push("Condición: " + weatherconditiondescription);
-      // CondicionesRiesgo.push("Temperatura: " + temperaturecelsius + " °C");
-      // CondicionesRiesgo.push("Presión atmosférica: " + airpressure + " hPa");
-      // CondicionesRiesgo.push("Humedad: " + airhumidity + "%");
-      // CondicionesRiesgo.push("Cobertura de Nubes: " + cloudcoverage + "%");
-      // CondicionesRiesgo.push("Velocidad del Viento: " + windspeedkmh + " km/h");
-      // CondicionesRiesgo.push("Dirección del Viento: " + DireccionVientostring + " (" + DireccionViento + "°)");
-      // CondicionesRiesgo.push("Estación Meteorológica: " + weatherstationname + " (ID: " + weatherstationid + ")");
-
       this.loadingClima = false;
     });
   }
 
 
   /// EL CLIMA FINALIZA AQUI ////////////  
-
 
   async calcularSituacionRiesgo() {
 
@@ -271,7 +264,6 @@ export class RiesgoComponent implements OnInit {
     await this.hayAserradero(this.latitud, this.longitud);
     await this.hayEstacionTransformadora(this.latitud, this.longitud);
     await this.hayLineaAltoVoltaje(this.latitud, this.longitud);
-
     await this.analizarTipoSuelo(this.latitud, this.longitud);
 
     ////////////////////////////////////////////////
@@ -305,7 +297,7 @@ export class RiesgoComponent implements OnInit {
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   // Comunidades Aborígenes // 
   async hayComunidadAborigen(latitud: any, longitud: any) {
-
+    esperar(1); // Espera 1   segundos
     await this.httpService.get(`${environment.urlSigMisiones}/datos/aborigenes.geojson`).then((data: any) => {
       for (let i = 0; i < data.features.length; i++) {
         let LatitudControl = data.features[i].geometry.coordinates[1];
@@ -325,6 +317,7 @@ export class RiesgoComponent implements OnInit {
 
   // Estacion de Servicio // 
   async hayEstacionServicio(latitud: any, longitud: any) {
+    esperar(1); // Espera 1   segundos
     await this.httpService.get(`${environment.urlSigMisiones}/datos/combustible.geojson`).then((data: any) => {
       for (let i = 0; i < data.features.length; i++) {
         let LatitudControl = data.features[i].geometry.coordinates[1];
@@ -348,6 +341,7 @@ export class RiesgoComponent implements OnInit {
 
   // Deposito de Gas // 
   async hayDepositoGas(latitud: any, longitud: any) {
+    esperar(1); // Espera 1   segundos
     await this.httpService.get(`${environment.urlSigMisiones}/datos/deposito-gas.geojson`).then((data: any) => {
       for (let i = 0; i < data.features.length; i++) {
         let LatitudControl = data.features[i].geometry.coordinates[1];
@@ -368,6 +362,7 @@ export class RiesgoComponent implements OnInit {
 
   // Venta de Gas // 
   async hayVentaGas(latitud: any, longitud: any) {
+    esperar(1); // Espera 1   segundos
     await this.httpService.get(`${environment.urlSigMisiones}/datos/venta-gas.geojson`).then((data: any) => {
       for (let i = 0; i < data.features.length; i++) {
         let LatitudControl = data.features[i].geometry.coordinates[1];
@@ -383,7 +378,6 @@ export class RiesgoComponent implements OnInit {
           if (typeof Nombre === 'undefined') {
             Nombre = "";
           }
-
           let condicion = "Venta de gas " + Nombre + " a " + parseInt(Distancia.toString()) + " metros";
           this.condicionesRiesgo.push(condicion);
         }
@@ -394,6 +388,7 @@ export class RiesgoComponent implements OnInit {
 
   // Escuelas // 
   async hayEscuela(latitud: any, longitud: any) {
+    esperar(1); // Espera 1   segundos
     await this.httpService.get(`${environment.urlSigMisiones}/datos/escuelas.geojson`).then((data: any) => {
       for (let i = 0; i < data.features.length; i++) {
         var LatitudControl = data.features[i].geometry.coordinates[1];
@@ -415,6 +410,7 @@ export class RiesgoComponent implements OnInit {
 
   // Aserraderos // 
   async hayAserradero(latitud: any, longitud: any) {
+    esperar(1); // Espera 1   segundos
     await this.httpService.get(`${environment.urlSigMisiones}/datos/aserraderos.geojson`).then((data: any) => {
       for (let i = 0; i < data.features.length; i++) {
         let LatitudControl = data.features[i].geometry.coordinates[1];
@@ -443,6 +439,7 @@ export class RiesgoComponent implements OnInit {
 
   // Estacion Transformadora // 
   async hayEstacionTransformadora(latitud: any, longitud: any) {
+    esperar(1); // Espera 1   segundos
     await this.httpService.get(`${environment.urlSigMisiones}/datos/estacion-transformadora.geojson`).then((data: any) => {
       for (let i = 0; i < data.features.length; i++) {
         let LatitudControl = data.features[i].geometry.coordinates[1];
@@ -463,6 +460,7 @@ export class RiesgoComponent implements OnInit {
 
   // Lineas Alta Tension // 
   async hayLineaAltoVoltaje(latitud: any, longitud: any) {
+    esperar(1); // Espera 1   segundos
     let DistanciaMenor = 1000;
     await this.httpService.get(`${environment.urlSigMisiones}/datos/alta-tension.geojson`).then((data: any) => {
       for (let i = 0; i < data.features.length; i++) {
@@ -488,6 +486,7 @@ export class RiesgoComponent implements OnInit {
 
   //////////////////////////////////////////////////////////////////////////
   async hayReservaNatural(latitud: any, longitud: any) {
+    esperar(1); // Espera 1   segundos
     // let Consulta = 'relation(around:2000,' + Latitud + ',' + Longitud + ')' +
     //   '[boundary=protected_area]' + ';out meta' + ';';
     let queryParam = `relation(around:2000,${latitud},${longitud})[boundary=protected_area];out meta;`
@@ -508,7 +507,7 @@ export class RiesgoComponent implements OnInit {
   }
 
   async hayAreaUrbanizada(latitud: any, longitud: any) {
-
+    esperar(1); // Espera 1   segundos
     let queryParam = `relation(around:2000,${latitud},${longitud})[boundary=residential];out meta;`
     await this.httpService.get(`${environment.urlOverpassApi}${queryParam}`).then((data: any) => {
       if (data.elements.length > 0) {
@@ -674,10 +673,6 @@ export class RiesgoComponent implements OnInit {
   async calcularTopografia(latitud: any, longitud: any) {
     ////////////////////////////////// TOPOGRAFIA //////////////////////////////
 
-
-    // Coordenadas del Foco de Incendio
-
-
     ///////////////////////////////////////////////////////////////
     //  Inclinacion
     ///////////////////////////////////////////////////////////////
@@ -820,27 +815,24 @@ export class RiesgoComponent implements OnInit {
     // Mide la relación entre la orientación y angulo del declive del terreno con la dirección del viento
     // 1 si ambos tienen la misma dirección
     // 0 si tienen direcciones enfrentadas en 180º
-
-    // TODO corregir el viento {direccionViento}
-
-    // Calculo del coeficiente Rumbo/Viento  cos(declive) / cos(viento)
     // Resultados: 0 -- 1
-    let RV = (Math.abs(Math.cos((this.orientacionDeclive * this.coeficienteRadianes)) + Math.cos((this.direccionViento * this.coeficienteRadianes))) / 2).toFixed(2);
+    let RV = '';
+    if (Math.abs(this.orientacionDeclive - this.direccionViento) < 180) {
+      RV = (Math.abs(this.orientacionDeclive - this.direccionViento) / 180).toFixed(2);
+    } else {
+      RV = (Math.abs(Math.abs(this.orientacionDeclive - this.direccionViento) - 360) / 180).toFixed(2);
+    }
+
+
     // const e = 2.718281828459045;
-    // RVI = ((e ^ x)-1) ^ 2
-    // Resultados: 0 --15
+    // Resultados: 0 --190
 
-    let RVI = ((((this.e ^ (this.anguloInclinacion * this.coeficienteRadianes)) - 1) ^ 2) * Number(RV)).toFixed(2);
-
-    // CondicionesRiesgo.push('<br><b>Factores Combinados de Topografía y Clima</b>');
-
-    // CondicionesRiesgo.push("Factor RV (Rumbo de la Inclinación/Dirección del Viento):  " + RV + " // Valores: 0=Bajo - 1=Alto");
-    // CondicionesRiesgo.push("Factor RVI (Rumbo/Inclinacion/Dirección del Viento): " + RVI + "  Valores: 0 - 15");
+    let RVI = (Math.pow(Math.pow(this.e, (this.anguloInclinacion * this.coeficienteRadianes * 1.5)), 2) * (1 + Number(RV))).toFixed(2);
 
     this.factoresCombinados.rv = RV;
     this.factoresCombinados.rvPercent = (parseFloat(RV) * 100) / 1
     this.factoresCombinados.rvi = RVI;
-    this.factoresCombinados.rviPercent = (parseFloat(RVI) * 100) / 15
+    this.factoresCombinados.rviPercent = (parseFloat(RVI) * 100) / 190
 
     this.loadingFactoresCombinados = false;
   }
@@ -921,8 +913,15 @@ export class RiesgoComponent implements OnInit {
     // var VelocidadViento = current.windspeedkmh 
     // VelocidadPropagacion se define en la función AnalizarTipoDeSuelo(Latitud, Longitud)
 
-    let RV = (Math.abs(Math.cos((this.orientacionDeclive * this.coeficienteRadianes)) + Math.cos((this.direccionViento * this.coeficienteRadianes))) / 2);
-    let RVI = ((((this.e ^ (this.anguloInclinacion * this.coeficienteRadianes)) - 1) ^ 2) * RV);
+    // 08/Ago/2022 -- RV y RVI ya estan definidos de antes
+    let RV = 0;
+    if (Math.abs(this.orientacionDeclive - this.direccionViento) < 180) {
+      RV = Math.abs(this.orientacionDeclive - this.direccionViento) / 180;
+    } else {
+      RV = Math.abs(Math.abs(this.orientacionDeclive - this.direccionViento) - 360) / 180;
+    }
+
+    let RVI = Math.pow(Math.pow(this.e, (this.anguloInclinacion * this.coeficienteRadianes * 1.5)), 2) * (1 + Number(RV));
 
     let currentLat = this.latitud;
     let currentLong = this.longitud;
@@ -932,19 +931,40 @@ export class RiesgoComponent implements OnInit {
 
       let velocidadViento = this.clima.hourly[iteracion].wind_speed;
       let direccionViento = this.clima.hourly[iteracion].wind_deg;
+      this.vectorViento = 0;
+      if (this.direccionViento < 180) {
+        this.vectorViento = this.direccionViento + 180;
+      } else {
+        this.vectorViento = this.direccionViento - 180;
+      }
 
       // coeficinte hora del dia
       let x = new Date().getHours() + iteracion;
 
-      let dft = Math.pow(this.e, - (Math.pow((1.8 - x / 8), 2)));
+      // 08/Ago/2022
+      // dtƒ = e ^ −(1.5 − x/8) ^ 4
+      let dft = Math.pow(this.e, - (Math.pow((1.5 - x / 8), 4)));
 
-      let recorrido = (this.velocidadPropagacion * RVI * (velocidadViento * 0.1) * dft) / 100;
+      // 08/Ago/2022
+      // let recorrido = (this.velocidadPropagacion * RVI * (velocidadViento * 0.1) * dft) / 100;
+      // ros = ƒps ∗ wbi * wsƒ ∗ dtƒ
+      // Antes: let recorrido = (this.velocidadPropagacion * RVI * (velocidadViento * 0.1) * dft) / 100;
+      let recorrido = (this.velocidadPropagacion * RVI * (1 + (velocidadViento * 0.1)) * dft) / 1000; // En metros
+      console.log("recorrido:", recorrido, this.velocidadPropagacion * 3.1, "velocidad", velocidadViento, (1 + (velocidadViento * 0.1)), dft);
 
-      let Angulo = direccionViento;
+
+      // Si el Angulo de Inclinacion es mayor a 30° prevalece sobre la dirección del viento
+      this.Angulo = 0;
+      if (this.anguloInclinacion > 30) { this.Angulo = this.orientacionDeclive; }
+      else { this.Angulo = this.vectorViento; }
+
+      console.log("lat:", this.latitud, "lon:", this.longitud);
+      console.log("recorrido:", recorrido, this.velocidadPropagacion * 3.1, "velocidad", velocidadViento, (1 + (velocidadViento * 0.1)), dft);
+      console.log("Angulo inclinacion ", this.anguloInclinacion, "Orientacion declive ", this.orientacionDeclive, "Vector viento", this.vectorViento, "Angulo desplazamiento ", this.Angulo);
 
       let lat1 = currentLat * this.coeficienteRadianes;
       let lon1 = currentLong * this.coeficienteRadianes;
-      let brng = Angulo * this.coeficienteRadianes;
+      let brng = this.Angulo * this.coeficienteRadianes;
       let R = this.radioTierra;
       let d = recorrido;
 
@@ -976,11 +996,6 @@ export class RiesgoComponent implements OnInit {
 
       this.map?.addLayer(mapCircle);
 
-
-      // Llamar a la función Topografía y obtener los nuevos valores de: 
-      // AnguloInclinacion 
-      // OrientacionDeclive
-
       // Cambiar los valores del clima para la siguiente hora
       // let DireccionViento = data.current.wind.deg[hora];
       // let VelocidadViento = current.windspeedkmh[hora];
@@ -994,10 +1009,27 @@ export class RiesgoComponent implements OnInit {
       currentLat = LatitudFin;
       currentLong = LongitudFin;
 
+      // Llamar a la función Topografía y obtener los nuevos valores de: 
+      // AnguloInclinacion 
+      // OrientacionDeclive
+      esperar(5); // Espera 5   segundos
+      let topografia: any = this.calcularTopografia(currentLat, currentLong);
+
     }
 
     this.loadingPrediccionPropagacion = false;
   }
 
 
+}
+
+
+// Demora la ejecución para no generar errores 429 (Too many request)
+async function esperar(segundos: any) {
+  var ms = segundos * 1000;
+  var start = new Date().getTime();
+  var end = start;
+  while (end < start + ms) {
+    end = new Date().getTime();
+  }
 }
